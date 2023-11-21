@@ -7,4 +7,8 @@
     <RootNamespace>parking_reservation_app</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="entityframework" Version="6.4.4" />
+  </ItemGroup>
+
 </Project>
