@@ -14,7 +14,7 @@ builder.Services.AddServerSideBlazor();
 
 var connectionString = builder.Configuration.GetConnectionString("ParkingContext") ?? throw new InvalidOperationException("Connection string not found.");
 builder.Services.AddDbContext<ParkingContext>(options => 
-    options.UseSqlServer(connectionString));
+    options.UseNpgsql(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddScoped(typeof(WeatherForecastService));

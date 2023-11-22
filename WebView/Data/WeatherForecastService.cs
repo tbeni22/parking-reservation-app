@@ -9,17 +9,7 @@ namespace parking_reservation_app.Data
         "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
         };
 
-        public WeatherForecastService(ParkingContext context) {
-            foreach (var user in context.User)
-            {
-                Console.WriteLine(user);
-            }
-
-            context.User.Add(new User());
-            context.SaveChanges();
-
-            foreach(var user in context.User)
-                Console.WriteLine(user);
+        public WeatherForecastService() {
 
         }
 
