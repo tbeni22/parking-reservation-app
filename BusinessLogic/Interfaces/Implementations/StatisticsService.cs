@@ -1,4 +1,5 @@
-﻿using DataAccess.Data;
+﻿using DataAccess;
+using DataAccess.Data;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -7,7 +8,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DataAccess.Interfaces.Implementations
+namespace BuisnessLogic.Interfaces.Implementations
 {
     public class StatisticsService : IStatistics
     {

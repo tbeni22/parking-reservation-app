@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Components.Web;
 using DataAccess;
 using DataAccess.Services;
 using Microsoft.EntityFrameworkCore;
-using DataAccess.Interfaces;
-using DataAccess.Interfaces.Implementations;
+using BuisnessLogic.Interfaces;
+using BuisnessLogic.Interfaces.Implementations;
 
 var builder = WebApplication.CreateBuilder(args);
 

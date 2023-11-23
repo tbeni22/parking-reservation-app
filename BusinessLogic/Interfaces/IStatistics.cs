@@ -1,4 +1,4 @@
-﻿namespace DataAccess.Interfaces
+﻿namespace BuisnessLogic.Interfaces
 {
     public interface IStatistics
     {
