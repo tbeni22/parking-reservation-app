@@ -9,6 +9,11 @@ namespace DataAccess.Data
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int ID { get; set; }
-        public virtual ICollection<Reservation> Reservations { get; set; }
+
+        [Column("UserName")]
+        public String Name { get; set; }
+        public ICollection<Reservation> Reservations { get; set; }
+
+        public ICollection<FailureReport> FailureReports { get; set; }
     }
 }
