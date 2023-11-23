@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace parking_reservation_app.Migrations
+namespace DataAccess.Migrations
 {
     public partial class postgres : Migration
     {

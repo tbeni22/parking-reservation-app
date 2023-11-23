@@ -1,4 +1,4 @@
-﻿namespace parking_reservation_app.Services
+﻿namespace DataAccess.Interfaces
 {
     public interface IStatistics
     {
@@ -11,6 +11,6 @@
         int getWeeklyFailedReservationCount(DateOnly beginning);
 
         int getWeeklyAverageHours(DateOnly beginning);
-        
+
     }
 }

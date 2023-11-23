@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.EntityFrameworkCore;
-using parking_reservation_app.DAL.ContosoUniversity.DAL;
-using parking_reservation_app.Data;
+using DataAccess;
+using DataAccess.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -4,11 +4,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using parking_reservation_app.DAL.ContosoUniversity.DAL;
 
 #nullable disable
 
-namespace parking_reservation_app.Migrations
+namespace DataAccess.Migrations
 {
     [DbContext(typeof(ParkingContext))]
     partial class ParkingContextModelSnapshot : ModelSnapshot

@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace parking_reservation_app.Data
+namespace DataAccess.Data
 {
     [Table("app_user")]
     public class User

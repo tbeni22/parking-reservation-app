@@ -5,11 +5,10 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using parking_reservation_app.DAL.ContosoUniversity.DAL;
 
 #nullable disable
 
-namespace parking_reservation_app.Migrations
+namespace DataAccess.Migrations
 {
     [DbContext(typeof(ParkingContext))]
     [Migration("20231122230322_postgres")]

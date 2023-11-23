@@ -1,6 +1,6 @@
-using parking_reservation_app.DAL.ContosoUniversity.DAL;
+using DataAccess.Data;
 
-namespace parking_reservation_app.Data
+namespace DataAccess.Services
 {
     public class WeatherForecastService
     {
@@ -9,7 +9,8 @@ namespace parking_reservation_app.Data
         "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
         };
 
-        public WeatherForecastService() {
+        public WeatherForecastService()
+        {
 
         }
 

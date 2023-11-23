@@ -1,4 +1,4 @@
-namespace parking_reservation_app.Data
+namespace DataAccess.Data
 {
     public class WeatherForecast
     {
