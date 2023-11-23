@@ -16,12 +16,12 @@ namespace DataAccess.Interfaces.Implementations
         public StatisticsService(ParkingContext context) {
             _context = context;
         }
-        public int getAllSpaceNumber()
+        public async Task<int> getAllSpaceNumber()
         {
             return _context.ParkingPlaces.Count();
         }
 
-        public double getDailyUsageRatio(DateOnly date)
+        public async Task<double> getDailyUsageRatio(DateOnly date)
         {
             var query = from reservation in _context.Reservations
                          where DateOnly.FromDateTime(reservation.Beginning).Equals(date)
@@ -32,11 +32,15 @@ namespace DataAccess.Interfaces.Implementations
                              Count = reservationGroups.Select(x => x.ID).Count()
                          };
 
-            return query.Average(x => x.Count/getAllSpaceNumber());
+            int spaceCount = await getAllSpaceNumber();
+
+            return query.Average(x => x.Count/ spaceCount);
         }
 
-        public List<double> getUsageRatio(DateOnly date)
+        public async Task<List<double>> getUsageRatio(DateOnly date)
         {
+            int spaceNumber = await getAllSpaceNumber();
+
            var query = from reservation in _context.Reservations
                         where DateOnly.FromDateTime(reservation.Beginning).Equals(date)
                         select new { reservation.Beginning.Hour, reservation.ID } into reservationHour
@@ -44,12 +48,12 @@ namespace DataAccess.Interfaces.Implementations
                         select new
                         {
 
-                            Average = (double)(reservationGroups.Select(x => x.ID).Count()) / (double)getAllSpaceNumber(),
+                            Average = (double)(reservationGroups.Select(x => x.ID).Count()) / (double)spaceNumber
                         };
             return query.Select(a => a.Average).ToList();
         }
 
-        public double getWeeklyAverageHours(DateOnly beginning)
+        public async Task<double> getWeeklyAverageHours(DateOnly beginning)
         {
 
             var query = from reservation in _context.Reservations
@@ -66,7 +70,7 @@ namespace DataAccess.Interfaces.Implementations
             return query.Select(x => x.Time).Sum()/_context.User.Count();
         }
 
-        public int getWeeklyFailedReservationCount(DateOnly beginning)
+        public async Task<int> getWeeklyFailedReservationCount(DateOnly beginning)
         {
             var query = from reservation in _context.FailureReports
                         where (DateOnly.FromDateTime(reservation.Beginning).DayNumber >= beginning.DayNumber
