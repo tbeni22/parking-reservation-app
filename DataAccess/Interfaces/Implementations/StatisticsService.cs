@@ -1,4 +1,5 @@
 ﻿using DataAccess.Data;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,7 +19,7 @@ namespace DataAccess.Interfaces.Implementations
         }
         public async Task<int> getAllSpaceNumber()
         {
-            return _context.ParkingPlaces.Count();
+            return await _context.ParkingPlaces.CountAsync();
         }
 
         public async Task<double> getDailyUsageRatio(DateOnly date)
@@ -34,7 +35,7 @@ namespace DataAccess.Interfaces.Implementations
 
             int spaceCount = await getAllSpaceNumber();
 
-            return query.Average(x => x.Count/ spaceCount);
+            return await query.AverageAsync(x => x.Count/ spaceCount);
         }
 
         public async Task<List<double>> getUsageRatio(DateOnly date)
@@ -50,7 +51,7 @@ namespace DataAccess.Interfaces.Implementations
 
                             Average = (double)(reservationGroups.Select(x => x.ID).Count()) / (double)spaceNumber
                         };
-            return query.Select(a => a.Average).ToList();
+            return  await query.Select(a => a.Average).ToListAsync();
         }
 
         public async Task<double> getWeeklyAverageHours(DateOnly beginning)
@@ -67,7 +68,9 @@ namespace DataAccess.Interfaces.Implementations
                             Time = usersWeekly.Select(x => x.Time.Ticks).Average()
                         };
 
-            return query.Select(x => x.Time).Sum()/_context.User.Count();
+            int userCount = await _context.User.CountAsync();
+
+            return query.Select(x => x.Time).Sum()/userCount;
         }
 
         public async Task<int> getWeeklyFailedReservationCount(DateOnly beginning)
@@ -77,7 +80,7 @@ namespace DataAccess.Interfaces.Implementations
                         && DateOnly.FromDateTime(reservation.Beginning).DayNumber <= beginning.AddDays(7).DayNumber)
                         select reservation;
 
-            return query.Count();
+            return await query.CountAsync();
 
         }
     }
