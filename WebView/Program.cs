@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.EntityFrameworkCore;
 using DataAccess;
 using DataAccess.Services;
+using Microsoft.EntityFrameworkCore;
+using DataAccess.Interfaces;
+using DataAccess.Interfaces.Implementations;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,11 +15,11 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 
 var connectionString = builder.Configuration.GetConnectionString("ParkingContext") ?? throw new InvalidOperationException("Connection string not found.");
-builder.Services.AddDbContext<ParkingContext>(options => 
-    options.UseNpgsql(connectionString));
+builder.Services.AddDbContext<ParkingContext>(options => options.UseNpgsql(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddScoped(typeof(WeatherForecastService));
+builder.Services.AddScoped(typeof(IStatistics), typeof(StatisticsService));
 
 var app = builder.Build();
 

@@ -2,15 +2,15 @@
 {
     public interface IStatistics
     {
-        List<float> getUsageRatio(DateOnly date);
+        List<double> getUsageRatio(DateOnly date);
 
-        float getDailyUsageRatio(DateOnly date);
+        double getDailyUsageRatio(DateOnly date);
 
         int getAllSpaceNumber();
 
         int getWeeklyFailedReservationCount(DateOnly beginning);
 
-        int getWeeklyAverageHours(DateOnly beginning);
+        double getWeeklyAverageHours(DateOnly beginning);
 
     }
 }

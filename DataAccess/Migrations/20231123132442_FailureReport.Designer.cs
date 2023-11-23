@@ -3,6 +3,7 @@ using System;
 using DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DataAccess.Migrations
 {
     [DbContext(typeof(ParkingContext))]
-    partial class ParkingContextModelSnapshot : ModelSnapshot
+    [Migration("20231123132442_FailureReport")]
+    partial class FailureReport
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -43,7 +45,7 @@ namespace DataAccess.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("FailureReport", (string)null);
+                    b.ToTable("FailureReport");
                 });
 
             modelBuilder.Entity("DataAccess.Data.ParkingPlace", b =>
@@ -59,7 +61,7 @@ namespace DataAccess.Migrations
 
                     b.HasKey("ID");
 
-                    b.ToTable("ParkingPlace", (string)null);
+                    b.ToTable("ParkingPlace");
                 });
 
             modelBuilder.Entity("DataAccess.Data.Reservation", b =>
@@ -88,7 +90,7 @@ namespace DataAccess.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Reservation", (string)null);
+                    b.ToTable("Reservation");
                 });
 
             modelBuilder.Entity("DataAccess.Data.User", b =>
@@ -101,7 +103,7 @@ namespace DataAccess.Migrations
 
                     b.HasKey("ID");
 
-                    b.ToTable("app_user", (string)null);
+                    b.ToTable("app_user");
                 });
 
             modelBuilder.Entity("DataAccess.Data.FailureReport", b =>
