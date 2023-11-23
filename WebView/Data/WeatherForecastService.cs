@@ -1,3 +1,5 @@
+using parking_reservation_app.DAL.ContosoUniversity.DAL;
+
 namespace parking_reservation_app.Data
 {
     public class WeatherForecastService
@@ -5,7 +7,11 @@ namespace parking_reservation_app.Data
         private static readonly string[] Summaries = new[]
         {
         "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-    };
+        };
+
+        public WeatherForecastService() {
+
+        }
 
         public Task<WeatherForecast[]> GetForecastAsync(DateTime startDate)
         {
