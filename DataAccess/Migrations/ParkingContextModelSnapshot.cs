@@ -43,7 +43,7 @@ namespace DataAccess.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("FailureReport");
+                    b.ToTable("FailureReport", (string)null);
                 });
 
             modelBuilder.Entity("DataAccess.Data.ParkingPlace", b =>
@@ -59,7 +59,7 @@ namespace DataAccess.Migrations
 
                     b.HasKey("ID");
 
-                    b.ToTable("ParkingPlace");
+                    b.ToTable("ParkingPlace", (string)null);
                 });
 
             modelBuilder.Entity("DataAccess.Data.Reservation", b =>
@@ -88,7 +88,7 @@ namespace DataAccess.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Reservation");
+                    b.ToTable("Reservation", (string)null);
                 });
 
             modelBuilder.Entity("DataAccess.Data.User", b =>
@@ -111,7 +111,7 @@ namespace DataAccess.Migrations
 
                     b.HasKey("ID");
 
-                    b.ToTable("app_user");
+                    b.ToTable("app_user", (string)null);
                 });
 
             modelBuilder.Entity("DataAccess.Data.FailureReport", b =>
