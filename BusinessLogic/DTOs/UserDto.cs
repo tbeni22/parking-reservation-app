@@ -13,16 +13,5 @@ namespace BusinessLogic.DTOs
         public string? Name { get; set; }
         public string? Email { get; set; }
         public virtual ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
-
-        internal static UserDto FromDataEntity(User user)
-        {
-            return new UserDto
-            {
-                Id = user.ID,
-                Name = user.Name,
-                Email = user.Email,
-                Reservations = user.Reservations
-            };
-        }
     }
 }

@@ -1,5 +1,4 @@
-﻿using BusinessLogic.DTOs;
-using DataAccess;
+﻿using DataAccess;
 using DataAccess.Data;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -20,7 +19,7 @@ namespace BusinessLogic.Interfaces.Implementations
             this.context = context;
         }
 
-        public async Task<ParkingPlaceDto> CreateParkingPlace(string name, bool disabled)
+        public async Task<ParkingPlace> CreateParkingPlace(string name, bool disabled)
         {
             ParkingPlace parkingPlace = new ParkingPlace() { Name = name, DisabledParking = disabled };
             var created = await context.ParkingPlaces.AddAsync(parkingPlace);
@@ -28,7 +27,7 @@ namespace BusinessLogic.Interfaces.Implementations
             return created.Entity;
         }
 
-        public async Task<ParkingPlaceDto> DeleteParkingPlace(ParkingPlace place)
+        public async Task<ParkingPlace> DeleteParkingPlace(ParkingPlace place)
         {
             var delete = await context.ParkingPlaces.FindAsync(place.ID);
             if(delete != null)
@@ -36,15 +35,10 @@ namespace BusinessLogic.Interfaces.Implementations
                 context.ParkingPlaces.Remove(delete);
                 await context.SaveChangesAsync();
             }
-            return ParkingPlaceDto.FromDataEntity(delete);
+            return delete;
         }
 
-        public Task<ParkingPlaceDto> DeleteParkingPlace(ParkingPlaceDto place)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<List<ParkingPlaceDto>> FindByFilter(Func<ParkingPlace, bool> predicate, int limit = int.MaxValue)
+        public async Task<List<ParkingPlace>> FindByFilter(Func<ParkingPlace, bool> predicate, int limit = int.MaxValue)
         {
             var query = from parkingplace in context.ParkingPlaces
                         where predicate(parkingplace)
@@ -53,34 +47,25 @@ namespace BusinessLogic.Interfaces.Implementations
             if(query.Count() < limit)
                 limit = query.Count();
 
-            var parkingPlaces = await query.Take(limit).ToListAsync();
-           
-            return parkingPlaces.Select(parkingPlace => ParkingPlaceDto.FromDataEntity(parkingPlace)).ToList();
+            return await query.Take(limit).ToListAsync();
         }
 
-        public Task<List<ParkingPlaceDto>> FindByFilter(Func<ParkingPlaceDto, bool> predicate, int limit)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<List<ParkingPlaceDto>> GetParkingPlaces(int limit = int.MaxValue)
+        public async Task<List<ParkingPlace>> GetParkingPlaces(int limit = int.MaxValue)
         {
             if(context.ParkingPlaces.Count() < limit)
                 limit = context.ParkingPlaces.Count();
 
-            var parkingPlaces = await context.ParkingPlaces.Take(limit).ToListAsync();
-            return parkingPlaces.Select(parkingPlace => ParkingPlaceDto.FromDataEntity(parkingPlace)).ToList();
+            return await context.ParkingPlaces.Take(limit).ToListAsync();
         }
 
-        public async Task<List<ParkingPlaceDto>> GetParkingPlacesByName(string name, int limit = int.MaxValue)
+        public async Task<List<ParkingPlace>> GetParkingPlacesByName(string name, int limit = int.MaxValue)
         {
-           return await FindByFilter(parkingPlace => parkingPlace.Name.Equals(name), limit);
+           return await FindByFilter(parkingPLace => parkingPLace.Name.Equals(name), limit);
         }
 
-
-        public Task<ParkingPlaceDto> UpdateParkingPlaces(ParkingPlaceDto place)
+        public async Task UpdateParkingPlaces()
         {
-            throw new NotImplementedException();
+            await context.SaveChangesAsync();
         }
     }
 }

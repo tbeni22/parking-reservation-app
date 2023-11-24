@@ -1,4 +1,4 @@
-﻿using BusinessLogic.DTOs;
+﻿using DataAccess.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,17 +10,17 @@ namespace BusinessLogic.Interfaces
 {
     public interface IParkingManagment
     {
-        Task<ParkingPlaceDto> CreateParkingPlace(String name, bool disabled);
+        Task<ParkingPlace> CreateParkingPlace(String name, bool disabled);
 
-        Task<ParkingPlaceDto> UpdateParkingPlaces(ParkingPlaceDto place);
+        Task UpdateParkingPlaces();
 
-        Task<ParkingPlaceDto> DeleteParkingPlace(ParkingPlaceDto place);
+        Task<ParkingPlace> DeleteParkingPlace(ParkingPlace place);
 
-        Task<List<ParkingPlaceDto>> GetParkingPlaces(int limit);
+        Task<List<ParkingPlace>> GetParkingPlaces(int limit);
         
-        Task<List<ParkingPlaceDto>> GetParkingPlacesByName(String name, int limit);
+        Task<List<ParkingPlace>> GetParkingPlacesByName(String name, int limit);
 
-        Task<List<ParkingPlaceDto>> FindByFilter(Func<ParkingPlaceDto, bool> predicate, int limit);
+        Task<List<ParkingPlace>> FindByFilter(Func<ParkingPlace, bool> predicate, int limit);
 
     }
 }

@@ -13,15 +13,5 @@ namespace BusinessLogic.DTOs
         public bool DisabledParking { get; set; }
 
         public ICollection<ReservationDto> Reservations { get; set; } = new List<ReservationDto>();
-
-        public static ParkingPlaceDto FromDataEntity(ParkingPlace place)
-        {
-            return new ParkingPlaceDto
-            {
-                ID = place.ID,
-                DisabledParking = place.DisabledParking,
-                Reservations = place.Reservations.Select(r => ReservationDto.FromDataEntity(r)).ToList()
-            };
-        }
     }
 }
