@@ -5,9 +5,9 @@ VisualStudioVersion = 17.6.33815.320
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebView", "WebView\WebView.csproj", "{DB663DDB-1A20-4D52-90EF-F2769BE5680B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataAccess", "DataAccess\DataAccess.csproj", "{27A49A6F-082D-4A5A-B072-6EA6BDE29782}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataAccess", "DataAccess\DataAccess.csproj", "{27A49A6F-082D-4A5A-B072-6EA6BDE29782}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BusinessLogic", "BusinessLogic\BusinessLogic.csproj", "{886FF406-9EFB-450C-A571-BA094B460D76}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BusinessLogic", "BusinessLogic\BusinessLogic.csproj", "{886FF406-9EFB-450C-A571-BA094B460D76}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
