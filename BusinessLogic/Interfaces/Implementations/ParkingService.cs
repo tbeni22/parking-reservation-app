@@ -1,4 +1,5 @@
-﻿using DataAccess;
+﻿using BusinessLogic.DTOs;
+using DataAccess;
 using DataAccess.Data;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -19,48 +20,52 @@ namespace BusinessLogic.Interfaces.Implementations
             this.context = context;
         }
 
-        public async Task<ParkingPlace> CreateParkingPlace(string name, bool disabled)
+        public async Task<ParkingPlaceDto> CreateParkingPlace(string name, bool disabled)
         {
             ParkingPlace parkingPlace = new ParkingPlace() { Name = name, DisabledParking = disabled };
             var created = await context.ParkingPlaces.AddAsync(parkingPlace);
             context.SaveChanges();
-            return created.Entity;
+            var entity = created.Entity;
+            return new ParkingPlaceDto() { ID = entity.ID, Name = entity.Name, DisabledParking = entity.DisabledParking, Reservations = new List<Reservation>(entity.Reservations)};
         }
 
-        public async Task<ParkingPlace> DeleteParkingPlace(ParkingPlace place)
+        public async Task<ParkingPlaceDto> DeleteParkingPlace(ParkingPlaceDto place)
         {
-            var delete = await context.ParkingPlaces.FindAsync(place.ID);
-            if(delete != null)
+            var entity = await context.ParkingPlaces.FindAsync(place.ID);
+            if(entity != null)
             {
-                context.ParkingPlaces.Remove(delete);
+                context.ParkingPlaces.Remove(entity);
                 await context.SaveChangesAsync();
             }
-            return delete;
+            return new ParkingPlaceDto() { ID = entity.ID, Name = entity.Name, DisabledParking = entity.DisabledParking, Reservations = new List<Reservation>(entity.Reservations) }; ;
         }
 
-        public async Task<List<ParkingPlace>> FindByFilter(Func<ParkingPlace, bool> predicate, int limit = int.MaxValue)
-        {
-            var query = from parkingplace in context.ParkingPlaces
-                        where predicate(parkingplace)
-                        select parkingplace;
 
-            if(query.Count() < limit)
-                limit = query.Count();
-
-            return await query.Take(limit).ToListAsync();
-        }
-
-        public async Task<List<ParkingPlace>> GetParkingPlaces(int limit = int.MaxValue)
+        public async Task<List<ParkingPlaceDto>> GetParkingPlaces(int limit = int.MaxValue)
         {
             if(context.ParkingPlaces.Count() < limit)
                 limit = context.ParkingPlaces.Count();
-
-            return await context.ParkingPlaces.Take(limit).ToListAsync();
+            var entities = await context.ParkingPlaces.Take(limit).ToListAsync();
+            List<ParkingPlaceDto> result = new List<ParkingPlaceDto>();
+            foreach (var entity in entities)
+                result.Add(new ParkingPlaceDto() { ID = entity.ID, Name = entity.Name, DisabledParking = entity.DisabledParking, Reservations = new List<Reservation>(entity.Reservations) });
+            return result;
         }
 
-        public async Task<List<ParkingPlace>> GetParkingPlacesByName(string name, int limit = int.MaxValue)
+        public async Task<List<ParkingPlaceDto>> GetParkingPlacesByName(string name, int limit = int.MaxValue)
         {
-           return await FindByFilter(parkingPLace => parkingPLace.Name.Equals(name), limit);
+            var query = from parkingplace in context.ParkingPlaces
+                        where parkingplace.Name.Equals(name)
+                        select parkingplace;
+
+            if (query.Count() < limit)
+                limit = query.Count();
+
+            var entities = await query.Take(limit).ToListAsync();
+            List<ParkingPlaceDto> result = new List<ParkingPlaceDto>();
+            foreach (var entity in entities)
+                result.Add(new ParkingPlaceDto() { ID = entity.ID, Name = entity.Name, DisabledParking = entity.DisabledParking, Reservations = new List<Reservation>(entity.Reservations) });
+            return result;
         }
 
         public async Task UpdateParkingPlaces()

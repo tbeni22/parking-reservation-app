@@ -1,12 +1,9 @@
 ﻿using BusinessLogic.DTOs;
 using DataAccess;
 using DataAccess.Data;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace BusinessLogic.Interfaces.Implementations
 {
@@ -20,7 +17,9 @@ namespace BusinessLogic.Interfaces.Implementations
         }
         public Task<UserDto> CreateUser()
         {
-            throw new NotImplementedException();
+            var userStore = new UserStore<User>(context);
+            var user = new User();
+            return null;            
         }
 
         public async Task DeleteUser(int id)
