@@ -18,7 +18,5 @@ namespace DataAccess.Data
         public ICollection<Reservation> Reservations { get; set; }
 
         public ICollection<FailureReport> FailureReports { get; set; }
-
-        public int valami { get; set; }
     }
 }
