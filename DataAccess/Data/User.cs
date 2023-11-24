@@ -5,11 +5,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace DataAccess.Data
 {
     [Table("app_user")]
-    public class User : IdentityUser
+    public class User : IdentityUser<int>
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int ID { get; set; }
 
         [Column("UserName")]
         public String Name { get; set; }

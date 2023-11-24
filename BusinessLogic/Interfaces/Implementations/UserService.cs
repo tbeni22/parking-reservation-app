@@ -11,21 +11,20 @@ namespace BusinessLogic.Interfaces.Implementations
     {
         private ParkingContext context;
 
-        public UserService(ParkingContext context) 
+        public UserService(ParkingContext context)
         {
-            this.context = context;    
+            this.context = context;
         }
         public Task<UserDto> CreateUser()
         {
-            var userStore = new UserStore<User>(context);
             var user = new User();
-            return null;            
+            return null;
         }
 
         public async Task DeleteUser(int id)
         {
             var user = await context.User.FindAsync(id);
-            if (user != null) 
+            if (user != null)
             {
                 context.User.Remove(user);
                 await context.SaveChangesAsync();
@@ -37,7 +36,7 @@ namespace BusinessLogic.Interfaces.Implementations
             var user = await context.User.FindAsync(id);
             if (user != null)
             {
-                return new UserDto() { Id = user.ID, Name = user.Name, Email = user.Email, Reservations = new List<Reservation>(user.Reservations) };
+                return new UserDto() { Id = user.Id, Name = user.Name, Email = user.Email, Reservations = new List<Reservation>(user.Reservations) };
             }
             else return null;
         }
@@ -51,12 +50,12 @@ namespace BusinessLogic.Interfaces.Implementations
             var user = await querry.FirstOrDefaultAsync();
             if (user != null)
             {
-                return new UserDto() { Email = user.Email, Id = user.ID, Name = user.Name, Reservations = new List<Reservation>(user.Reservations) };
+                return new UserDto() { Email = user.Email, Id = user.Id, Name = user.Name, Reservations = new List<Reservation>(user.Reservations) };
             }
             return null;
         }
 
-        
+
         public Task<bool> UpdatePassword(string password)
         {
             throw new NotImplementedException();
