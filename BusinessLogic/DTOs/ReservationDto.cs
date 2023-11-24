@@ -18,5 +18,17 @@ namespace BusinessLogic.DTOs
 
 
         public UserDto? User { get; set; }
+
+        public static ReservationDto FromDataEntity(Reservation r)
+        {
+            return new ReservationDto
+            {
+                ID = r.ID,
+                Beginning = r.Beginning,
+                Ending = r.Ending,
+                ParkingPlace = ParkingPlaceDto.FromDataEntity(r.ParkingPlace),
+                User = UserDto.FromDataEntity(r.User)
+            };
+        }
     }
 }
