@@ -25,7 +25,7 @@ namespace BusinessLogic.Interfaces.Implementations
             ParkingPlace parkingPlace = new ParkingPlace() { Name = name, DisabledParking = disabled };
             var created = await context.ParkingPlaces.AddAsync(parkingPlace);
             context.SaveChanges();
-            return created.Entity;
+            return ParkingPlaceDto.FromDataEntity(created.Entity);
         }
 
         public async Task<ParkingPlaceDto> DeleteParkingPlace(ParkingPlace place)
