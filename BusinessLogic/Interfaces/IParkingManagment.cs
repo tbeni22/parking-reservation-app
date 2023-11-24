@@ -12,15 +12,15 @@ namespace BusinessLogic.Interfaces
     {
         Task<ParkingPlace> CreateParkingPlace(String name, bool disabled);
 
-        Task updateParkingPlaces();
+        Task UpdateParkingPlaces();
 
         Task<ParkingPlace> DeleteParkingPlace(ParkingPlace place);
 
-        Task<List<ParkingPlace>> GetParkingPlaces(int limit = int.MaxValue);
+        Task<List<ParkingPlace>> GetParkingPlaces(int limit);
         
-        Task<List<ParkingPlace>> GetParkingPlacesByName(String name, int limit = int.MaxValue);
+        Task<List<ParkingPlace>> GetParkingPlacesByName(String name, int limit);
 
-        Task<List<ParkingPlace>> FindByFilter(Func<ParkingPlace, bool> predicate);
+        Task<List<ParkingPlace>> FindByFilter(Func<ParkingPlace, bool> predicate, int limit);
 
     }
 }
