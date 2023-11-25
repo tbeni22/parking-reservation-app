@@ -8,8 +8,6 @@ namespace BusinessLogic
 {
     public class Consts
     {
-
-        private Consts() { }
         public const int UsernameMinLength = 5;
 
         /*
@@ -29,12 +27,5 @@ namespace BusinessLogic
 
         public const string PasswordValidationError =
             "Password must have more than 6 characters, min. 1 uppercase, min. 1 lowercase, min. 1 special characters.";
-
-        public class Roles
-        {
-            private Roles() { }
-            public const string Admin = "Admin";
-            public const string User = "User";
-        }
     }
 }

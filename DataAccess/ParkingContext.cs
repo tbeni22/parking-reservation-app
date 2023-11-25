@@ -1,12 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using DataAccess.Data;
-using Microsoft.AspNetCore.Identity;
 
 namespace DataAccess
 {
-    public class ParkingContext : IdentityDbContext<User, IdentityRole<int>, int>
+    public class ParkingContext : DbContext
     {
+
+        public ParkingContext() :base() { }
+
         public ParkingContext(DbContextOptions<ParkingContext> options) : base(options)
         {
         }
@@ -15,5 +16,7 @@ namespace DataAccess
         public DbSet<Reservation> Reservations { get; set; }
         public DbSet<ParkingPlace> ParkingPlaces { get; set; }
         public DbSet<FailureReport> FailureReports { get; set; }
+
+
     }
 }
