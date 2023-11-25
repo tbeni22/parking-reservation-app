@@ -1,7 +1,7 @@
 ﻿using BusinessLogic.DTOs;
 using DataAccess;
 using DataAccess.Data;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 
@@ -9,24 +9,35 @@ namespace BusinessLogic.Interfaces.Implementations
 {
     public class UserService : IUserManagement
     {
-        private ParkingContext context;
+        private readonly ParkingContext context;
+        private readonly UserManager<User> userManager;
+        private readonly SignInManager<User> signInManager;
 
-        public UserService(ParkingContext context)
+        public UserService(ParkingContext context, UserManager<User> userManager, SignInManager<User> signInManager)
         {
             this.context = context;
+            this.userManager = userManager;
+            this.signInManager = signInManager;
         }
-        public Task<UserDto> CreateUser()
+        public async Task<UserDto> CreateUser(UserDto dto, string password, string role = Consts.Roles.User)
         {
-            var user = new User();
-            return null;
+            var dbUser = new User() { UserName = dto.Name, Email = dto.Email };
+            var user = await userManager.CreateAsync(dbUser, password);
+            if(user.Succeeded) {
+                await userManager.AddToRoleAsync(dbUser, role);
+                return dto;
+            }
+            else
+                return null;
         }
 
         public async Task DeleteUser(int id)
         {
+
             var user = await context.User.FindAsync(id);
             if (user != null)
             {
-                context.User.Remove(user);
+                await userManager.DeleteAsync(user);
                 await context.SaveChangesAsync();
             }
         }
@@ -36,7 +47,7 @@ namespace BusinessLogic.Interfaces.Implementations
             var user = await context.User.FindAsync(id);
             if (user != null)
             {
-                return new UserDto() { Id = user.Id, Name = user.Name, Email = user.Email, Reservations = new List<Reservation>(user.Reservations) };
+                return new UserDto() { Id = user.Id, Name = user.UserName, Email = user.Email, Reservations = new List<Reservation>(user.Reservations) };
             }
             else return null;
         }
@@ -50,15 +61,30 @@ namespace BusinessLogic.Interfaces.Implementations
             var user = await querry.FirstOrDefaultAsync();
             if (user != null)
             {
-                return new UserDto() { Email = user.Email, Id = user.Id, Name = user.Name, Reservations = new List<Reservation>(user.Reservations) };
+                return new UserDto() { Email = user.Email, Id = user.Id, Name = user.UserName, Reservations = new List<Reservation>(user.Reservations) };
             }
             return null;
         }
 
 
-        public Task<bool> UpdatePassword(string password)
+        public async Task<bool> UpdatePassword(UserDto dto, string password, string oldPassword = null)
         {
-            throw new NotImplementedException();
+
+            var user = await context.User.FindAsync(dto.Id);
+            if (user != null) {
+                if (oldPassword != null)
+                {
+                    var result = await userManager.ChangePasswordAsync(user, oldPassword, password);
+                    return result.Succeeded;
+                }
+                else
+                {
+                    var result = await userManager.AddPasswordAsync(user, password);
+                    return result.Succeeded;
+                }
+
+            }
+            throw new UserNotfoundException();
         }
 
         public async Task<UserDto> UpdateUser(UserDto user)
@@ -66,12 +92,28 @@ namespace BusinessLogic.Interfaces.Implementations
             var dbUser = await context.User.FindAsync(user.Id);
             if (dbUser != null)
             {
-                dbUser.Name = user.Name;
+                dbUser.UserName = user.Name;
                 dbUser.Email = user.Email;
                 dbUser.Reservations = new List<Reservation>(user.Reservations);
                 await context.SaveChangesAsync();
             }
             return user;
+        }
+
+        public async Task<bool> LoginAsync(LoginRequest loginRequest)
+        {
+            var result = await signInManager.PasswordSignInAsync(loginRequest.Username, loginRequest.Password, false, false);
+            return result.Succeeded;
+        }
+
+        public async Task SignOutAsync()
+        {
+            await signInManager.SignOutAsync();
+        }
+
+        public class UserNotfoundException : Exception
+        {
+
         }
     }
 }
