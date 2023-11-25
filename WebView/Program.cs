@@ -1,5 +1,4 @@
 using DataAccess;
-using DataAccess.Services;
 using Microsoft.EntityFrameworkCore;
 
 using BuisnessLogic.Interfaces;
@@ -20,7 +19,6 @@ var connectionString = builder.Configuration.GetConnectionString("ParkingContext
 builder.Services.AddDbContext<ParkingContext>(options => options.UseNpgsql(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddScoped(typeof(WeatherForecastService));
 builder.Services.AddScoped(typeof(IStatistics), typeof(StatisticsService));
 
 builder.Services.AddDefaultIdentity<IdentityUser>

@@ -11,6 +11,8 @@ namespace DataAccess.Data
         [Column("UserName")]
         public String Name { get; set; }
 
+        public bool Disabled { get; set; }
+
         public ICollection<Reservation> Reservations { get; set; }
 
         public ICollection<FailureReport> FailureReports { get; set; }

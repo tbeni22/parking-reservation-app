@@ -16,6 +16,6 @@ namespace DataAccess.Data
         public User User { get; set; }
 
         public DateTime Beginning {  get; set; }
-        public DateTime End { get; set; }
+        public DateTime Ending { get; set; }
     }
 }
