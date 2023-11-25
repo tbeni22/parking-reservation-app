@@ -1,4 +1,5 @@
 ﻿using BusinessLogic.DTOs;
+using DataAccess.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,12 +14,12 @@ namespace BusinessLogic.Interfaces
 
         Task<ReservationDto> GetReservation(int id);
 
-        Task<int> NewReservation(ReservationDto data);
+        Task<ReservationDto> NewReservation(ReservationDto data);
 
         Task<int> NewRepeatingReservation(RepeatingReservation data);
 
-        Task DeleteReservation(int reservationId);
+        Task<ReservationDto> DeleteReservation(int reservationId);
 
-        Task<bool> NotifyAboutNoFreeSpace(ReservationDto slot);
+        Task<FailureReport> NotifyAboutNoFreeSpace(ReservationDto slot);
     }
 }
