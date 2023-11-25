@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Identity;
 using System;
 using BusinessLogic.DTOs;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Components.Authorization;
+using WebView.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,7 +38,7 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.SlidingExpiration = true;
 
 });
-
+builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
 builder.Services.AddScoped(typeof(WeatherForecastService));
 builder.Services.AddScoped(typeof(IStatistics), typeof(StatisticsService));
 
