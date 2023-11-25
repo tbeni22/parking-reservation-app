@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace WebView.Identity.Pages
+namespace WebView.Areas.Identity.Pages.Shared
 {
     public class _LoginPartialModel : PageModel
     {
