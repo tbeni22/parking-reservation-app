@@ -25,6 +25,13 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 //.AddEntityFrameworkStores<ParkingContext>();
 
 builder.Services.AddDefaultIdentity<User>(options => {
+    options.SignIn.RequireConfirmedAccount = false;
+    options.User.RequireUniqueEmail = true;
+    options.Password.RequireDigit = true;
+    options.Password.RequiredLength = 6;
+    options.Password.RequireNonAlphanumeric = true;
+    options.Password.RequireUppercase = true;
+    options.Password.RequireLowercase = true;
 })
     .AddRoles<IdentityRole<int>>()
     .AddRoleManager<RoleManager<IdentityRole<int>>>()
