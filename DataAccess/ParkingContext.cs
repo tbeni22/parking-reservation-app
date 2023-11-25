@@ -15,5 +15,10 @@ namespace DataAccess
         public DbSet<Reservation> Reservations { get; set; }
         public DbSet<ParkingPlace> ParkingPlaces { get; set; }
         public DbSet<FailureReport> FailureReports { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+        }
     }
 }
