@@ -3,9 +3,19 @@
 @page "/park"
 @inject IParkingPlace parkingService
 
+<style>
+    .title-section {
+        text-align: center;
+        margin-bottom: 40px; /* Adjust the margin size as needed */
+    }
+</style>
 
-<h3>ParkingSpaceManager</h3>
+<div class="title-section">
+    <h2>Parkolóhelyek kezelése</h2>
+</div>
 
+
+<h4>Új parkolóhely felvétele</h4>
 
 <div class="container mt-4 mb-3">
     <div class="card border-dark">
@@ -20,7 +30,7 @@
                     <div class="form-check form-group">
                         <input class="form-check-input" type="checkbox" @bind="currentPlace.DisabledParking" id="disabledCheck" />
                         <label class="form-check-label" for="disabledCheck">
-                            Disabled
+                            Mozgáskorlátozott
                         </label>
                     </div>
                 </div>
@@ -32,13 +42,14 @@
     </div>
 </div>
 
-
+<h4>Parkolóhelyek</h4>
 <table class="table table-bordered table-striped">
     <thead class="thead-dark">
         <tr>
             <th>ID</th>
             <th>Name</th>
             <th>Disabled Parking</th>
+            <th>Action</th>
         </tr>
     </thead>
     <tbody>
@@ -46,33 +57,94 @@
         {
             <tr>
                 <td>@place.ID</td>
-                <td>@place.Name</td>
-                <td>@(place.DisabledParking ? "Yes" : "No")</td>
+                <td>
+                    @if (editingList.Contains(place.ID))
+                    {
+                        <input class="form-control" @bind="@place.Name" />
+                    }
+                    else
+                    {
+                        @place.Name
+                    }
+                </td>
+                <td>
+                    @if (editingList.Contains(place.ID))
+                    {
+                        <input type="checkbox" @bind="@place.DisabledParking" />
+                    }
+                    else
+                    {
+                        @(place.DisabledParking ? "Yes" : "No")
+                    }
+                </td>
+                <td>
+                    <button class="btn btn-primary" @onclick="() => ToggleEdit(place.ID)">
+                        @if (editingList.Contains(place.ID))
+                        {
+                            <span>Mentés</span>
+                        }
+                        else
+                        {
+                            <span>Szerkesztés</span>
+                        }
+                    </button>
+                    <button class="btn btn-primary" @onclick="() => ShowReservations(place.ID)">
+                        <span>Foglalások</span>
+                    </button>
+                </td>
             </tr>
         }
     </tbody>
 </table>
 
 
-
-<input placeholder="Something todo" @bind="newTodo" />
-<button @onclick="AddTodo">Add todo</button>
-
-<h1>Todo (@todos.Count(todo => !todo.IsDone))</h1>
-
-<ul>
-    @foreach (var todo in todos)
-    {
-        <li>
-            <input type="checkbox" @bind="todo.IsDone" />
-            <input @bind="todo.Title" />
-        </li>
-    }
-</ul>
-
-<input placeholder="Something todo" @bind="newTodo" />
-<button @onclick="AddTodo">Add todo</button>
-
+<div class="modal fade @(showPopup ? "show" : "")" tabindex="-1" role="dialog" style="display: @(showPopup ? "block" : "none")">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Foglalások</h5>
+                <button type="button" class="close" @onclick="ClosePopup">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                @if (selectedReservations == null)
+                {
+                    <span>No reservations</span>
+                }
+                else
+                {
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Kezdés</th>
+                                <th>Befejezés</th>
+                                <th>Dolgozó azonosító</th>
+                                <th>Dolgozó neve</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var reservation in selectedReservations)
+                            {
+                                <tr>
+                                    <td>@reservation.ID</td>
+                                    <td>@reservation.Beginning</td>
+                                    <td>@reservation.Ending</td>
+                                    <td>@reservation.User.Id</td>
+                                    <td>@reservation.User.Name</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" @onclick="ClosePopup">Bezárás</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 
 
@@ -80,18 +152,45 @@
     private List<ParkingPlaceDto> parkingPlaces = new List<ParkingPlaceDto>();
     private ParkingPlaceDto currentPlace = new ParkingPlaceDto();
     private string Message = String.Empty;
-
-    private List<TodoItem> todos = new();
     private string? newTodo;
+    private List<ReservationDto> selectedReservations = new List<ReservationDto>();
+
+    List<int> editingList = new List<int>();
 
     protected override async Task OnInitializedAsync()
     {
-        // Call the service here
-        //fill parkingPLaces with example data
-        /* parkingPlaces.Add(new ParkingPlaceDto() { ID = 1, Name = "Test", DisabledParking = false });
-         parkingPlaces.Add(new ParkingPlaceDto() { ID = 2, Name = "Test2", DisabledParking = true });
-         parkingPlaces.Add(new ParkingPlaceDto() { ID = 3, Name = "Test3", DisabledParking = false });*/
+        parkingPlaces = await parkingService.GetParkingPlaces();
+    }
 
+    bool showPopup = false;
+
+    void ClosePopup()
+    {
+        showPopup = false;
+    }
+
+    void ShowReservations(int placeId)
+    {
+        showPopup = true;
+        selectedReservations = new List<ReservationDto>();
+        selectedReservations.Add(new ReservationDto() { ID = 1, Beginning = DateTime.Now, Ending = DateTime.Now.AddMonths(1), User = new UserDto() { Id = 1, Name = "Gódor Gordon" } });
+        selectedReservations.Add(new ReservationDto() { ID = 2, Beginning = DateTime.Now.AddMonths(2), Ending = DateTime.Now, User = new UserDto() { Id = 2, Name = "Telek Benedek" } });
+        //selectedReservations = null;
+        //selectedReservations = parkingPlaces.Find(x => x.ID == placeId).Reservations.ToList();
+    }
+
+    async Task ToggleEdit(int placeId)
+    {
+        if (editingList.Contains(placeId))
+        {
+            editingList.Remove(placeId);
+            await parkingService.UpdateParkingPlace(parkingPlaces.Find(x => x.ID == placeId));
+
+        }
+        else
+        {
+            editingList.Add(placeId);
+        }
     }
 
     private async Task ValidateData(EditContext editContext)
@@ -103,63 +202,19 @@
         }
 
         // Data is valid
-        parkingPlaces.Add(currentPlace);
+        /*parkingPlaces.Add(currentPlace);
         currentPlace = new ParkingPlaceDto() { ID = 2, Name = "Test2", DisabledParking = true };
         parkingPlaces.Add(currentPlace);
         currentPlace = new ParkingPlaceDto();
         parkingPlaces.Add(currentPlace);
-        Message = "Changes saved";
+        Message = "Changes saved";*/
     }
 
-    private void AddTodo()
+    private async void AddParkingPlace()
     {
-        if (!string.IsNullOrWhiteSpace(newTodo))
-        {
-            todos.Add(new TodoItem { Title = newTodo });
-            newTodo = string.Empty;
-        }
-    }
+        parkingPlaces.Add(await parkingService.NewParkingPlace(currentPlace));
 
-    private void AddParkingPlace()
-    {
-        parkingPlaces.Add(currentPlace);
         currentPlace = new ParkingPlaceDto();
-    }
-
-    class TodoItem
-    {
-        public string? Title { get; set; }
-        public bool IsDone { get; set; } = false;
-    }
-
-    public class PizzaSpecial
-    {
-        public int Id { get; set; }
-
-        public string Name { get; set; }
-
-        public decimal BasePrice { get; set; }
-
-        public string Description { get; set; }
-
-        public string ImageUrl { get; set; }
-
-        public string GetFormattedBasePrice() => BasePrice.ToString("0.00");
-    }
-
-    List<PizzaSpecial> specials = new();
-
-    protected override void OnInitialized()
-    {
-        specials.AddRange(new List<PizzaSpecial>
-        {
-            new PizzaSpecial { Name = "The Baconatorizor", BasePrice =  11.99M, Description = "It has EVERY kind of bacon", ImageUrl="img/pizzas/bacon.jpg"},
-            new PizzaSpecial { Name = "Buffalo chicken", BasePrice =  12.75M, Description = "Spicy chicken, hot sauce, and blue cheese, guaranteed to warm you up", ImageUrl="img/pizzas/meaty.jpg"},
-            new PizzaSpecial { Name = "Veggie Delight", BasePrice =  11.5M, Description = "It's like salad, but on a pizza", ImageUrl="img/pizzas/salad.jpg"},
-            new PizzaSpecial { Name = "Margherita", BasePrice =  9.99M, Description = "Traditional Italian pizza with tomatoes and basil", ImageUrl="img/pizzas/margherita.jpg"},
-            new PizzaSpecial { Name = "Basic Cheese Pizza", BasePrice =  11.99M, Description = "It's cheesy and delicious. Why wouldn't you want one?", ImageUrl="img/pizzas/cheese.jpg"},
-            new PizzaSpecial { Name = "Classic pepperoni", BasePrice =  10.5M, Description = "It's the pizza you grew up with, but Blazing hot!", ImageUrl="img/pizzas/pepperoni.jpg" }
-        });
     }
 
 }
