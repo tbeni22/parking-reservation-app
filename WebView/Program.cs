@@ -1,10 +1,11 @@
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 using DataAccess;
-using DataAccess.Services;
 using Microsoft.EntityFrameworkCore;
+
 using BuisnessLogic.Interfaces;
 using BuisnessLogic.Interfaces.Implementations;
+using DataAccess.Data;
+using Microsoft.AspNetCore.Identity;
+using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,8 +19,33 @@ var connectionString = builder.Configuration.GetConnectionString("ParkingContext
 builder.Services.AddDbContext<ParkingContext>(options => options.UseNpgsql(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddScoped(typeof(WeatherForecastService));
 builder.Services.AddScoped(typeof(IStatistics), typeof(StatisticsService));
+
+builder.Services.AddDefaultIdentity<IdentityUser>
+    (options =>
+    {
+        options.SignIn.RequireConfirmedAccount = false;
+        options.User.RequireUniqueEmail = true;
+        options.Stores.ProtectPersonalData = true;
+        options.Password.RequireDigit = true;
+        options.Password.RequiredLength = 6;
+        options.Password.RequireNonAlphanumeric = true;
+        options.Password.RequireUppercase = true;
+        options.Password.RequireLowercase = true;
+    })
+.AddEntityFrameworkStores<ParkingContext>();
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    // TODO: Pathing
+    options.Cookie.HttpOnly = true;
+    options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
+
+    options.LoginPath = "/Identity/Account/Login";
+    options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+    options.SlidingExpiration = true;
+
+});
 
 var app = builder.Build();
 
@@ -36,6 +62,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
 
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");

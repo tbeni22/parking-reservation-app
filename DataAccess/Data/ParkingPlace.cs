@@ -11,6 +11,8 @@ namespace DataAccess.Data
         public int ID { get; init; }
         public bool DisabledParking { get; set; }
 
+        public string Name { get; set; }
+
         public virtual ICollection<Reservation> Reservations { get; set; }
     }
 }

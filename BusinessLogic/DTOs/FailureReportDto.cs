@@ -9,13 +9,11 @@ using System.Threading.Tasks;
 
 namespace BusinessLogic.DTOs
 {
-    public class ParkingPlaceDto
+    public class FailureReportDto
     {
         public int ID { get; init; }
-
-        public String Name { get; set; }
-        public bool DisabledParking { get; set; }
-
-        public virtual ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
+        public int UserId { get; set; }
+        public DateTime Beginning { get; set; }
+        public DateTime Ending { get; set; }
     }
 }
