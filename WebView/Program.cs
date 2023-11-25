@@ -24,10 +24,12 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 //builder.Services.AddIdentity<User, IdentityRole<int>>()
 //.AddEntityFrameworkStores<ParkingContext>();
 
-builder.Services.AddIdentity<User, IdentityRole<int>>(options => { })
+builder.Services.AddDefaultIdentity<User>(options => {
+})
     .AddRoles<IdentityRole<int>>()
     .AddRoleManager<RoleManager<IdentityRole<int>>>()
     .AddEntityFrameworkStores<ParkingContext>();
+
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
