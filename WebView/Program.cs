@@ -22,8 +22,20 @@ var connectionString = builder.Configuration.GetConnectionString("ParkingContext
 builder.Services.AddDbContext<ParkingContext>(options => options.UseNpgsql(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddDefaultIdentity<User>(options => { })
-.AddEntityFrameworkStores<ParkingContext>().AddDefaultTokenProviders();
+
+builder.Services.AddDefaultIdentity<User>
+    (options =>
+    {
+        options.SignIn.RequireConfirmedAccount = false;
+        options.User.RequireUniqueEmail = true;
+        options.Stores.ProtectPersonalData = true;
+        options.Password.RequireDigit = true;
+        options.Password.RequiredLength = 6;
+        options.Password.RequireNonAlphanumeric = true;
+        options.Password.RequireUppercase = true;
+        options.Password.RequireLowercase = true;
+    })
+.AddEntityFrameworkStores<ParkingContext>();
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
