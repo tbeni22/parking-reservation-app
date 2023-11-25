@@ -6,6 +6,8 @@ using BuisnessLogic.Interfaces.Implementations;
 using DataAccess.Data;
 using Microsoft.AspNetCore.Identity;
 using System;
+using BusinessLogic.Interfaces;
+using BusinessLogic.Interfaces.Implementations;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,9 +17,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 
+
 var connectionString = builder.Configuration.GetConnectionString("ParkingContext") ?? throw new InvalidOperationException("Connection string not found.");
 builder.Services.AddDbContext<ParkingContext>(options => options.UseNpgsql(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+builder.Services.AddScoped(typeof(IParkingPlace), typeof(ParkingService));
 
 builder.Services.AddScoped(typeof(IStatistics), typeof(StatisticsService));
 
