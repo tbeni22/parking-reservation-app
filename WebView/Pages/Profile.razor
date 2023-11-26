@@ -33,12 +33,13 @@
 </div>
 
 @code {
-    
-    private UserDto userDto = new UserDto();
+
+    private UserDto userDto;
     private string role = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
+        userDto = new UserDto();
         var authstate = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var authUser = authstate.User;
         var user = await UserManager.GetUserAsync(authUser);
