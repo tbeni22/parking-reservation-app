@@ -21,8 +21,5 @@ namespace DataAccess.Data
 
         [ForeignKey("UserId")]
         public User User { get; set; }
-
-        
-        
     }
 }

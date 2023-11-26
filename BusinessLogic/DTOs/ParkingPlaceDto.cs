@@ -16,6 +16,6 @@ namespace BusinessLogic.DTOs
         public String Name { get; set; }
         public bool DisabledParking { get; set; }
 
-        public virtual ICollection<ReservationDto> Reservations { get; set; } = new List<ReservationDto>();
+        public virtual ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
     }
 }
