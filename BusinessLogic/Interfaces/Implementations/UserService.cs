@@ -21,11 +21,11 @@ namespace BusinessLogic.Interfaces.Implementations
             this.userManager = userManager;
             this.signInManager = signInManager;
         }
-        public async Task<UserDto> CreateUser(UserDto dto, Role role, string password="ChangeThis#!4")
+        public async Task<UserDto> CreateUser(UserDto dto, Role role, string password = "ChangeThis#!4")
         {
             var user = Activator.CreateInstance<User>();
             user.SecurityStamp = Guid.NewGuid().ToString();
-            
+
             user.UserName = dto.Email;
             user.Email = dto.Email;
             user.Name = dto.Name;
@@ -100,9 +100,13 @@ namespace BusinessLogic.Interfaces.Implementations
             var dbUser = await context.User.FindAsync(user.Id);
             if (dbUser != null)
             {
-                dbUser.UserName = user.Name;
+
+                dbUser.Name = user.Name;
+                dbUser.Address = user.Address;
+                dbUser.Disabled = user.Disabled;
                 dbUser.Email = user.Email;
-                dbUser.Reservations = new List<Reservation>(user.Reservations);
+                dbUser.Reservations = user.Reservations;
+
                 await context.SaveChangesAsync();
             }
             return user;

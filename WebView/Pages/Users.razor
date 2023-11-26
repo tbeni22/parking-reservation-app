@@ -159,7 +159,8 @@
         if (editingList.Contains(userId))
         {
             editingList.Remove(userId);
-            // await user.UpdateParkingPlace(parkingPlaces.Find(x => x.ID == placeId));
+            await _userService.UpdateUser(users.Find(x => x.Id == userId));
+            
 
         }
         else
