@@ -119,9 +119,63 @@ namespace BusinessLogic.Interfaces.Implementations
             return null;
         }
 
-        public Task<int> NewRepeatingReservation(RepeatingReservation data)
+        public async Task<bool> NewRepeatingReservation(RepeatingReservation data)
         {
-            throw new NotImplementedException();
+            List<ReservationDto> reservations = new List<ReservationDto>();
+            switch (data.Rate)
+            {
+                case RepetitionRate.Daily:
+                    for (int i = 0; i < data.RepeateFor; i++)
+                    {
+                        reservations.Add(
+                            new ReservationDto()
+                            {
+                                Beginning = data.FirstOccurence.Beginning.AddDays(i),
+                                Ending = data.FirstOccurence.Beginning.AddDays(i),
+                                ParkingPlaceId = data.FirstOccurence.ParkingPlaceId,
+                                ParkingPlaceName = data.FirstOccurence.ParkingPlaceName,
+                                User = data.FirstOccurence.User
+                            }
+                        );
+                    }
+                    break;
+                case RepetitionRate.Weekly:
+                    for (int i = 0; i < data.RepeateFor; i++)
+                    {
+                        reservations.Add(
+                            new ReservationDto()
+                            {
+                                Beginning = data.FirstOccurence.Beginning.AddDays(i*7),
+                                Ending = data.FirstOccurence.Beginning.AddDays(i*7),
+                                ParkingPlaceId = data.FirstOccurence.ParkingPlaceId,
+                                ParkingPlaceName = data.FirstOccurence.ParkingPlaceName,
+                                User = data.FirstOccurence.User
+                            }
+                        );
+                    }
+                    break;  
+            }
+
+            bool isReserved = false;
+            foreach (ReservationDto res in reservations)
+            {
+                if (await NewReservationRepeat(res) == false)
+                {
+                    isReserved = true;
+                }
+            }
+
+            if( !isReserved )
+            {
+                foreach (ReservationDto res in reservations)
+                {
+                    await NewReservation(res);
+                }
+                return true;
+            }
+
+            return false;
+
         }
 
         public async Task<ReservationDto> DeleteReservation(int reservationId)
@@ -174,6 +228,56 @@ namespace BusinessLogic.Interfaces.Implementations
                 Email = user.Email,
                 Reservations = user.Reservations
             };
+        }
+
+        public async Task<bool> NewReservationRepeat(ReservationDto data)
+        {
+            // todo: get user from session
+
+            Reservation newreservation = new Reservation()
+            {
+                ID = data.ID,
+                Beginning = data.Beginning,
+                Ending = data.Ending,
+                ParkingPlaceId = data.ParkingPlaceId,
+                UserId = data.User.Id
+            };
+
+            var query = from reservation in context.Reservations
+                        where reservation.ParkingPlace.ID == data.ParkingPlaceId
+                        && data.Beginning.CompareTo(reservation.Beginning) >= 0 && data.Beginning.CompareTo(reservation.Ending) <= 0
+                        && data.Ending.CompareTo(reservation.Beginning) >= 0 && data.Ending.CompareTo(reservation.Ending) <= 0
+                        select reservation;
+
+            var query2 = from parkingplace in context.ParkingPlaces
+                         where parkingplace.DisabledParking == true
+                         && parkingplace.ID == parkingplace.ID
+                         select parkingplace;
+
+
+            var query3 = (from reservation in context.Reservations
+                          where reservation.User.Id == data.User.Id
+                          select (reservation.Ending - reservation.Beginning).TotalHours)
+                         .Sum();
+
+            var entities = await query.ToListAsync();
+            var disabled = await query2.FirstOrDefaultAsync();
+            if (disabled != null)
+            {
+                if (entities.Count == 0 && data.User.Disabled == true && ((data.Ending - data.Beginning).TotalHours + query3) <= 12)
+                {
+                   return true;
+                }
+            }
+            else
+            {
+                if (entities.Count == 0 && ((data.Ending - data.Beginning).TotalHours + query3) <= 12)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

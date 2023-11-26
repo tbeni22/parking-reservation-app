@@ -16,7 +16,7 @@ namespace BusinessLogic.Interfaces
 
         Task<ReservationDto> NewReservation(ReservationDto data);
 
-        Task<int> NewRepeatingReservation(RepeatingReservation data);
+        Task<bool> NewRepeatingReservation(RepeatingReservation data);
 
         Task<ReservationDto> DeleteReservation(int reservationId);
 
