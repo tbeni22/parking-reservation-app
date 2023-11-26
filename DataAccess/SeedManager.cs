@@ -25,6 +25,7 @@ namespace DataAccess
 
             await roleManager.CreateAsync(new IdentityRole<int>(Role.ADMIN.ToString()));
             await roleManager.CreateAsync(new IdentityRole<int>(Role.USER.ToString()));
+            await roleManager.CreateAsync(new IdentityRole<int>("teszt"));
         }
 
         private static async Task SeedAdminUser(IServiceProvider services)

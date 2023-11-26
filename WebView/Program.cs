@@ -6,6 +6,8 @@ using DataAccess.Data;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.AspNetCore.Identity;
 using System;
+using BusinessLogic.Interfaces;
+using BusinessLogic.Interfaces.Implementations;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -51,6 +53,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 
 builder.Services.AddScoped(typeof(IStatistics), typeof(StatisticsService));
+builder.Services.AddScoped(typeof(IUserManagement), typeof(UserService));
 
 var app = builder.Build();
 

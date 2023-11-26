@@ -2,7 +2,9 @@
 using DataAccess;
 using DataAccess.Data;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using static BusinessLogic.Consts;
 
 
 namespace BusinessLogic.Interfaces.Implementations
@@ -19,14 +21,19 @@ namespace BusinessLogic.Interfaces.Implementations
             this.userManager = userManager;
             this.signInManager = signInManager;
         }
-        public async Task<UserDto> CreateUser(UserDto dto, string password, string role = Consts.Roles.User)
+        public async Task<UserDto> CreateUser(UserDto dto, Role role, string password="ChangeThis#!4")
         {
-            var dbUser = new User() { UserName = dto.Name, Email = dto.Email };
-            var user = await userManager.CreateAsync(dbUser, password);
-            if(user.Succeeded) {
-                await userManager.AddToRoleAsync(dbUser, role);
+            var user = Activator.CreateInstance<User>();
+            user.SecurityStamp = Guid.NewGuid().ToString();
+            
+            user.UserName = dto.Email;
+            user.Email = dto.Email;
+            user.Name = dto.Name;
+            user.Address = dto.Address;
+            var result = await userManager.CreateAsync(user, password);
+            await userManager.AddToRoleAsync(user, role.ToString());
+            if (result.Succeeded)
                 return dto;
-            }
             else
                 return null;
         }
@@ -71,7 +78,8 @@ namespace BusinessLogic.Interfaces.Implementations
         {
 
             var user = await context.User.FindAsync(dto.Id);
-            if (user != null) {
+            if (user != null)
+            {
                 if (oldPassword != null)
                 {
                     var result = await userManager.ChangePasswordAsync(user, oldPassword, password);
@@ -109,6 +117,12 @@ namespace BusinessLogic.Interfaces.Implementations
         public async Task SignOutAsync()
         {
             await signInManager.SignOutAsync();
+        }
+
+        public async Task AddUserRole(User user, string Role = "User")
+        {
+            await userManager.AddToRoleAsync(user, "TESZT");
+
         }
 
         public class UserNotfoundException : Exception

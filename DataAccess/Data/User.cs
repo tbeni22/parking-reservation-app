@@ -13,5 +13,8 @@ namespace DataAccess.Data
         public ICollection<Reservation> Reservations { get; set; }
 
         public ICollection<FailureReport> FailureReports { get; set; }
+
+        public string Address { get; set; }
+        public string Name { get; set; }
     }
 }

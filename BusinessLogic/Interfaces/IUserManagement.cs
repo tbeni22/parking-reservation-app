@@ -1,4 +1,5 @@
 ﻿using BusinessLogic.DTOs;
+using DataAccess.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ namespace BusinessLogic.Interfaces
 {
     public interface IUserManagement
     {
-        Task<UserDto> CreateUser(UserDto dto, string password, string Role = Consts.Roles.User);
+        Task<UserDto> CreateUser(UserDto dto, Role role, string password = "ChangeThis#!4");
 
         //returns the updated user
         Task<UserDto> UpdateUser(UserDto user);
@@ -19,6 +20,7 @@ namespace BusinessLogic.Interfaces
         Task<bool> UpdatePassword(UserDto dto, string password, string oldPassword = null);
 
         public Task SignOutAsync();
+        Task AddUserRole(User user, string Role = Consts.Roles.User);
 
     }
 }
