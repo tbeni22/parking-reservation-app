@@ -40,7 +40,6 @@ namespace BusinessLogic.Interfaces.Implementations
 
         public async Task DeleteUser(int id)
         {
-
             var user = await context.User.FindAsync(id);
             if (user != null)
             {

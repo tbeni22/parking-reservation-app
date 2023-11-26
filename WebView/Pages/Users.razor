@@ -13,7 +13,7 @@
 
 <AuthorizeView Roles=@Role.ADMIN.ToString()>
     <h3>Felhasználók</h3>
-    
+
     <table class="table table-bordered table-striped">
         <thead class="thead-dark">
             <tr>
@@ -82,6 +82,9 @@
                             }
                         </button>
 
+                        <button class="btn btn-danger" @onclick="() => DeleteUser(user.Id)">
+                            <span>Törlés</span>
+                        </button>
                     </td>
                 </tr>
             }
@@ -143,15 +146,13 @@
 
     protected override async Task OnInitializedAsync()
     {
-        //add example users
-        users.Add(new UserDto { Id = 1, Name = "John Doe", Email = "test@test.com", Disabled = false });
-        users.Add(new UserDto
-            {
-                Id = 2,
-                Name = "Jane Doe",
-                Email = "okay@gmail.com"
-            });
         users = await _userService.GetAllUsers();
+    }
+
+    async Task DeleteUser(int userId)
+    {
+        await _userService.DeleteUser(userId);
+        users.Remove(users.Find(x => x.Id == userId));
     }
 
     async Task ToggleEdit(int userId)
@@ -160,8 +161,6 @@
         {
             editingList.Remove(userId);
             await _userService.UpdateUser(users.Find(x => x.Id == userId));
-            
-
         }
         else
         {
@@ -186,7 +185,7 @@
         {
             errorText = e.Message;
         }
-   
+
 
         newUser = new UserDto(); // Clear the form after adding the user
     }
