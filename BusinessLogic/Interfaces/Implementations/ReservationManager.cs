@@ -64,6 +64,7 @@ namespace BusinessLogic.Interfaces.Implementations
 
         public async Task<ReservationDto> NewReservation(ReservationDto data)
         {
+            // todo: get user from session
 
             Reservation newreservation = new Reservation()
                 {

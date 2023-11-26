@@ -1,8 +1,10 @@
-﻿namespace BuisnessLogic.Interfaces
+﻿using BusinessLogic.DTOs;
+
+namespace BusinessLogic.Interfaces
 {
     public interface IStatistics
     {
-        Task<List<double>> getUsageRatio(DateOnly date);
+        Task<List<HourStat>> getUsageRatio(DateOnly date);
 
         Task<double> getDailyUsageRatio(DateOnly date);
 
@@ -12,5 +14,6 @@
 
         Task<double> getWeeklyAverageHours(DateOnly beginning);
 
+        Task<double> GetAverageNumOfDays(DateOnly referenceEnd);
     }
 }
