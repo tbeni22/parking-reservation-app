@@ -23,7 +23,7 @@ builder.Services.AddDbContext<ParkingContext>(options => options.UseNpgsql(conne
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddScoped(typeof(IParkingPlace), typeof(ParkingService));
 
-<<<<<<<<< Temporary merge branch 1
+
 builder.Services.AddScoped(typeof(IStatistics), typeof(StatisticsService));
 
 builder.Services.AddDefaultIdentity<IdentityUser>
@@ -39,10 +39,10 @@ builder.Services.AddDefaultIdentity<IdentityUser>
         options.Password.RequireLowercase = true;
     })
 .AddEntityFrameworkStores<ParkingContext>();
-=========
+
 builder.Services.AddDefaultIdentity<User>(options => { })
 .AddEntityFrameworkStores<ParkingContext>().AddDefaultTokenProviders();
->>>>>>>>> Temporary merge branch 2
+
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
@@ -56,7 +56,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 });
 
-builder.Services.AddScoped(typeof(WeatherForecastService));
+
 builder.Services.AddScoped(typeof(IStatistics), typeof(StatisticsService));
 
 var app = builder.Build();
