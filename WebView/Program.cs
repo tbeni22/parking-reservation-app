@@ -20,6 +20,7 @@ builder.Services.AddDbContext<ParkingContext>(options => options.UseNpgsql(conne
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddScoped(typeof(IStatistics), typeof(StatisticsService));
+builder.Services.AddScoped(typeof(IReservation), typeof(ReservationManager));
 
 builder.Services.AddDefaultIdentity<IdentityUser>
     (options =>
