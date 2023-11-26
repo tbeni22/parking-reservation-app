@@ -1,8 +1,8 @@
 using DataAccess;
 using Microsoft.EntityFrameworkCore;
 
-using BuisnessLogic.Interfaces;
-using BuisnessLogic.Interfaces.Implementations;
+using BusinessLogic.Interfaces;
+using BusinessLogic.Interfaces.Implementations;
 using DataAccess.Data;
 using Microsoft.AspNetCore.Identity;
 using System;

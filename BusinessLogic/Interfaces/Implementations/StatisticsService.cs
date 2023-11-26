@@ -1,4 +1,5 @@
-﻿using DataAccess;
+﻿using BusinessLogic.DTOs;
+using DataAccess;
 using DataAccess.Data;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -8,7 +9,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BuisnessLogic.Interfaces.Implementations
+namespace BusinessLogic.Interfaces.Implementations
 {
     public class StatisticsService : IStatistics
     {
@@ -39,20 +40,19 @@ namespace BuisnessLogic.Interfaces.Implementations
             return await query.AverageAsync(x => x.Count/ spaceCount);
         }
 
-        public async Task<List<double>> getUsageRatio(DateOnly date)
+        public async Task<List<HourStat>> getUsageRatio(DateOnly date)
         {
             int spaceNumber = await getAllSpaceNumber();
 
-           var query = from reservation in _context.Reservations
+            var query = from reservation in _context.Reservations
                         where DateOnly.FromDateTime(reservation.Beginning).Equals(date)
-                        select new { reservation.Beginning.Hour, reservation.ID } into reservationHour
-                        group reservationHour by new { reservationHour.Hour } into reservationGroups
-                        select new
+                        group reservation by reservation.Beginning.Hour into reservationGroups
+                        select new HourStat
                         {
-
-                            Average = (double)(reservationGroups.Select(x => x.ID).Count()) / (double)spaceNumber
+                            Hour = reservationGroups.Key,
+                            Ratio = (double)(reservationGroups.Select(x => x.ID).Count()) / (double)spaceNumber
                         };
-            return  await query.Select(a => a.Average).ToListAsync();
+            return await query.ToListAsync();
         }
 
         public async Task<double> getWeeklyAverageHours(DateOnly beginning)
