@@ -14,5 +14,6 @@ namespace BusinessLogic.Interfaces
 
         Task<double> getWeeklyAverageHours(DateOnly beginning);
 
+        Task<double> GetAverageNumOfDays(DateOnly referenceEnd);
     }
 }

@@ -8,8 +8,8 @@
 <h4>Kihasználtság</h4>
 
 <ApexChart TItem="HourStat"
-           Title="Órákra bontott kihasználtság"
-           Options="options">
+           Title="Órákra bontott parkolóhely kihasználtság (%)"
+           Options="heatmapOptions">
 
     @foreach (var oneDate in hourlyUsageStats)
     {
@@ -23,14 +23,31 @@
 
 </ApexChart>
 
+<ApexChart TItem="WeeklyAverage"
+           Title="Felhasználók által átlagosan foglalt napok száma">
+
+    <ApexPointSeries TItem="WeeklyAverage"
+                     Items="WeeklyAverages"
+                     Name="Heti átlag"
+                     XValue="@(e => (e.StartDate.ToString() + " - " + e.StartDate.AddDays(6).ToString()))"
+                     YValue="@(e => Convert.ToInt32(e.Average))"
+                     SeriesType="SeriesType.Bar" />
+</ApexChart>
+
 @code {
     class DailyUsage {
         public List<HourStat> Stats { get; set; } = new();
         public DateOnly Date { get; set; }
     }
-
     private List<DailyUsage> hourlyUsageStats { get; set; } = new();
-    private ApexChartOptions<HourStat> options;
+    private ApexChartOptions<HourStat> heatmapOptions;
+
+    class WeeklyAverage {
+        public double Average { get; set; }
+        public DateOnly StartDate { get; set; }
+    }
+    private List<WeeklyAverage> WeeklyAverages { get; set; } = new();
+
 
     // used for smiley sample data
     private double GetSmileyPixel(int dateIdx, int hour) {
@@ -45,10 +62,12 @@
 
     protected override async Task OnInitializedAsync()
     {
-        for (int i = 0; i < 5; i++) {
+        // data for heatmap
+        for (int i = 0; i < 5; i++)
+        {
             // get data from service
             //var dailyUsageData = await statisticsService.getUsageRatio(DateOnly.FromDateTime(DateTime.Now.AddDays(-i)));
-            
+
             // seed sample data
             List<HourStat> dailyUsageData = new List<HourStat>();
             for (int j = 8; j < 16; j++)
@@ -63,9 +82,19 @@
                 });
         }
 
-        options = new ApexChartOptions<HourStat>
+        heatmapOptions = new ApexChartOptions<HourStat>
             {
                 Colors = new List<string> { "#008FFB" }
             };
+
+        // data for bar chart
+        for (int i = 3; i >= 0; i--)
+        {
+            var endDate = DateOnly.FromDateTime(DateTime.Now).AddDays(-i * 7);
+            var average = await statisticsService.GetAverageNumOfDays(endDate);
+            var data = new WeeklyAverage { Average = average, StartDate = endDate.AddDays(-6) };
+            WeeklyAverages.Add(data);
+        }
+
     }
 }

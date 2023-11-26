@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -55,6 +56,7 @@ namespace BusinessLogic.Interfaces.Implementations
             return await query.ToListAsync();
         }
 
+        // 
         public async Task<double> getWeeklyAverageHours(DateOnly beginning)
         {
 
@@ -74,11 +76,32 @@ namespace BusinessLogic.Interfaces.Implementations
             return query.Select(x => x.Time).Sum()/userCount;
         }
 
+        public async Task<double> GetAverageNumOfDays(DateOnly referenceEnd)
+        {
+            var referenceStart = referenceEnd.AddDays(-6);
+            //var start = referenceStart.DayOfYear + referenceStart.Year * 366;
+            //var end = referenceEnd.DayOfYear + referenceEnd.Year * 366;
+
+            var query = from reservation in _context.Reservations
+                        where (DateOnly.FromDateTime(reservation.Beginning) >= referenceStart
+                        && DateOnly.FromDateTime(reservation.Beginning) <= referenceEnd)
+                        group reservation by new { reservation.UserId } into userReservations
+                        select new
+                        {
+                            UserId = userReservations.Key.UserId,
+                            Days = userReservations.Select(x => x.Beginning.DayOfYear).Count()
+                        };
+
+            return await query.Select(x => x.Days).DefaultIfEmpty().AverageAsync();
+        }
+
         public async Task<int> getWeeklyFailedReservationCount(DateOnly beginning)
         {
+            var end = beginning.AddDays(7);
+
             var query = from reservation in _context.FailureReports
                         where (DateOnly.FromDateTime(reservation.Beginning).DayNumber >= beginning.DayNumber
-                        && DateOnly.FromDateTime(reservation.Beginning).DayNumber <= beginning.AddDays(7).DayNumber)
+                        && DateOnly.FromDateTime(reservation.Beginning).DayNumber <= end.DayNumber)
                         select reservation;
 
             return await query.CountAsync();
