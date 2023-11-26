@@ -26,12 +26,20 @@ namespace BusinessLogic.Interfaces.Implementations
             var created = await context.ParkingPlaces.AddAsync(parkingPlace);
             context.SaveChanges();
             var entity = created.Entity;
-            return new ParkingPlaceDto() { ID = entity.ID, Name = entity.Name, DisabledParking = entity.DisabledParking, Reservations = new List<Reservation>(entity.Reservations)};
+            return new ParkingPlaceDto()
+            {
+                ID = entity.ID,
+                Name = entity.Name,
+                DisabledParking = entity.DisabledParking,
+                Reservations = entity.Reservations != null
+                 ? entity.Reservations.Select(ReservationDto.FromReservation).ToList()
+                 : new List<ReservationDto>()
+            };
         }
 
         public async Task<ParkingPlaceDto> DeleteParkingPlace(ParkingPlaceDto place)
         {
-            return await DeleteParkingPlace(place.ID);    
+            return await DeleteParkingPlace(place.ID);
         }
 
 
@@ -43,18 +51,30 @@ namespace BusinessLogic.Interfaces.Implementations
                 context.ParkingPlaces.Remove(entity);
                 await context.SaveChangesAsync();
             }
-            return new ParkingPlaceDto() { ID = entity.ID, Name = entity.Name, DisabledParking = entity.DisabledParking, Reservations = new List<Reservation>(entity.Reservations) }; ;
+            return new ParkingPlaceDto() 
+            { ID = entity.ID, Name = entity.Name, DisabledParking = entity.DisabledParking,
+                Reservations = entity.Reservations.Select(ReservationDto.FromReservation).ToList() }; ;
         }
 
 
         public async Task<List<ParkingPlaceDto>> GetParkingPlaces(int limit = int.MaxValue)
         {
-            if(context.ParkingPlaces.Count() < limit)
+            if (context.ParkingPlaces.Count() < limit)
                 limit = context.ParkingPlaces.Count();
             var entities = await context.ParkingPlaces.Take(limit).ToListAsync();
             List<ParkingPlaceDto> result = new List<ParkingPlaceDto>();
             foreach (var entity in entities)
-                result.Add(new ParkingPlaceDto() { ID = entity.ID, Name = entity.Name, DisabledParking = entity.DisabledParking, Reservations = new List<Reservation>(entity.Reservations) });
+            {
+                result.Add(new ParkingPlaceDto()
+                {
+                    ID = entity.ID,
+                    Name = entity.Name,
+                    DisabledParking = entity.DisabledParking,
+                    Reservations = entity.Reservations != null
+                 ? entity.Reservations.Select(ReservationDto.FromReservation).ToList()
+                 : new List<ReservationDto>()
+                });
+            }
             return result;
         }
 
@@ -70,7 +90,11 @@ namespace BusinessLogic.Interfaces.Implementations
             var entities = await query.Take(limit).ToListAsync();
             List<ParkingPlaceDto> result = new List<ParkingPlaceDto>();
             foreach (var entity in entities)
-                result.Add(new ParkingPlaceDto() { ID = entity.ID, Name = entity.Name, DisabledParking = entity.DisabledParking, Reservations = new List<Reservation>(entity.Reservations) });
+                result.Add(new ParkingPlaceDto() { ID = entity.ID, Name = entity.Name, DisabledParking = entity.DisabledParking, 
+                    Reservations =entity.Reservations != null
+                 ? entity.Reservations.Select(ReservationDto.FromReservation).ToList()
+                 : new List<ReservationDto>()
+                });
             return result;
         }
 
@@ -81,7 +105,15 @@ namespace BusinessLogic.Interfaces.Implementations
                         select parkingPlace;
             var entity = await query.FirstOrDefaultAsync();
             if (entity != null)
-                return new ParkingPlaceDto() { ID = entity.ID, Name = entity.Name, DisabledParking = entity.DisabledParking, Reservations = new List<Reservation>(entity.Reservations) };
+                return new ParkingPlaceDto()
+                {
+                    ID = entity.ID,
+                    Name = entity.Name,
+                    DisabledParking = entity.DisabledParking,
+                    Reservations = entity.Reservations != null
+                 ? entity.Reservations.Select(ReservationDto.FromReservation).ToList()
+                 : new List<ReservationDto>()
+                };
             else return null;
         }
 
@@ -90,14 +122,26 @@ namespace BusinessLogic.Interfaces.Implementations
             return await GetParkingPlace(parkingPlaceDto.ID);
         }
 
+        public async Task<ParkingPlace> GetParkingPlaceEntity(int id)
+        {
+            var query = from parkingPlace in context.ParkingPlaces
+                        where parkingPlace.ID == id
+                        select parkingPlace;
+            return await query.FirstOrDefaultAsync();
+          
+        }
+
         public async Task<ParkingPlaceDto> UpdateParkingPlace(ParkingPlaceDto dto)
         {
-            var dao = await GetParkingPlace(dto.ID);
+            var dao = await GetParkingPlaceEntity(dto.ID);
             if (dao != null)
             {
                 dao.DisabledParking = dto.DisabledParking;
                 dao.Name = dto.Name;
-                dao.Reservations = new List<Reservation>(dto.Reservations);
+                //dao.Reservations = new List<Reservation>(dto.Reservations.Select(ReservationDto.ToReservation()));
+                var entry = context.Attach(dao);
+                entry.State = EntityState.Modified;
+                await context.SaveChangesAsync();
                 return dto;
             }
             else
@@ -105,8 +149,8 @@ namespace BusinessLogic.Interfaces.Implementations
                 throw new UpdateException();
             }
         }
-            
+
     }
 
-        public class UpdateException : Exception {}
+    public class UpdateException : Exception { }
 }

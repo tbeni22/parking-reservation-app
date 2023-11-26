@@ -19,5 +19,35 @@ namespace BusinessLogic.DTOs
         public int ParkingPlaceId { get; set; }
         public String ParkingPlaceName { get; set; }
         public UserDto User { get; set; }
+
+        //from Reservation to ReservationDto, name of the func is FromReservation 
+        public static ReservationDto FromReservation(Reservation reservation)
+        {
+            return new ReservationDto()
+            {
+                ID = reservation.ID,
+                Beginning = reservation.Beginning,
+                Ending = reservation.Ending,
+                ParkingPlaceId = reservation.ParkingPlaceId,
+                ParkingPlaceName = reservation.ParkingPlace.Name,
+                User = UserDto.FromUser(reservation.User)
+            };
+        }
+
+        //to Reservation from ReservationDto, name of the func is ToReservation
+        public static Reservation ToReservation(ReservationDto reservationDto)
+        {
+            return new Reservation()
+            {
+                ID = reservationDto.ID,
+                Beginning = reservationDto.Beginning,
+                Ending = reservationDto.Ending,
+                ParkingPlaceId = reservationDto.ParkingPlaceId,
+                User = UserDto.ToUser(reservationDto.User)
+            };
+        }
+       
     }
+
+    
 }
