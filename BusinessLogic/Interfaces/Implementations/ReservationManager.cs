@@ -169,7 +169,7 @@ namespace BusinessLogic.Interfaces.Implementations
             return new UserDto()
             {
                 Id = user.Id,
-                Name = user.Name,
+                Name = user.UserName,
                 Email = user.Email,
                 Reservations = user.Reservations
             };

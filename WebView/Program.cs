@@ -1,11 +1,13 @@
 using DataAccess;
 using Microsoft.EntityFrameworkCore;
-
 using BuisnessLogic.Interfaces;
 using BuisnessLogic.Interfaces.Implementations;
 using DataAccess.Data;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.AspNetCore.Identity;
 using System;
+using BusinessLogic.Interfaces;
+using BusinessLogic.Interfaces.Implementations;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,21 +21,24 @@ var connectionString = builder.Configuration.GetConnectionString("ParkingContext
 builder.Services.AddDbContext<ParkingContext>(options => options.UseNpgsql(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddScoped(typeof(IStatistics), typeof(StatisticsService));
 
-builder.Services.AddDefaultIdentity<IdentityUser>
-    (options =>
-    {
-        options.SignIn.RequireConfirmedAccount = false;
-        options.User.RequireUniqueEmail = true;
-        options.Stores.ProtectPersonalData = true;
-        options.Password.RequireDigit = true;
-        options.Password.RequiredLength = 6;
-        options.Password.RequireNonAlphanumeric = true;
-        options.Password.RequireUppercase = true;
-        options.Password.RequireLowercase = true;
-    })
-.AddEntityFrameworkStores<ParkingContext>();
+//Todo: add options to service
+//builder.Services.AddIdentity<User, IdentityRole<int>>()
+//.AddEntityFrameworkStores<ParkingContext>();
+
+builder.Services.AddDefaultIdentity<User>(options => {
+    options.SignIn.RequireConfirmedAccount = false;
+    options.User.RequireUniqueEmail = true;
+    options.Password.RequireDigit = true;
+    options.Password.RequiredLength = 6;
+    options.Password.RequireNonAlphanumeric = true;
+    options.Password.RequireUppercase = true;
+    options.Password.RequireLowercase = true;
+})
+    .AddRoles<IdentityRole<int>>()
+    .AddRoleManager<RoleManager<IdentityRole<int>>>()
+    .AddEntityFrameworkStores<ParkingContext>();
+
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
@@ -46,6 +51,11 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.SlidingExpiration = true;
 
 });
+
+builder.Services.AddScoped(typeof(IStatistics), typeof(StatisticsService));
+builder.Services.AddScoped(typeof(IUserManagement), typeof(UserService));
+builder.Services.AddScoped(typeof(IParkingPlace), typeof(ParkingService));
+
 
 var app = builder.Build();
 
@@ -62,10 +72,19 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+app.UseAuthentication();
+app.UseAuthorization();
 
 
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+
+    await SeedManager.Seed(services);
+}
 
 app.Run();
 

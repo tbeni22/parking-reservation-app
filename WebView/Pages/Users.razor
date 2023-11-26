@@ -1,0 +1,192 @@
+﻿@page "/users"
+@using BusinessLogic.DTOs
+@using BusinessLogic.Interfaces
+@using DataAccess.Data
+@inject IUserManagement _userService
+
+<style>
+    .small-input {
+        width: 20%; /* Adjust the width as needed */
+    }
+</style>
+
+
+<AuthorizeView Roles=@Role.ADMIN.ToString()>
+    <h3>Felhasználók</h3>
+    
+    <table class="table table-bordered table-striped">
+        <thead class="thead-dark">
+            <tr>
+                <th>ID</th>
+                <th>Név</th>
+                <th>Email</th>
+                <th>Lakcím</th>
+                <th>Mozgáskorlátozott</th>
+                <th>Műveletek</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in users)
+            {
+                <tr>
+                    <td>@user.Id</td>
+                    <td>
+                        @if (editingList.Contains(user.Id))
+                        {
+                            <input class="form-control" @bind="@user.Name" />
+                        }
+                        else
+                        {
+                            @user.Name
+                        }
+                    </td>
+                    <td>
+                        @if (editingList.Contains(user.Id))
+                        {
+                            <input class="form-control" @bind="@user.Email" />
+                        }
+                        else
+                        {
+                            @user.Email
+                        }
+                    </td>
+                    <td>
+                        @if (editingList.Contains(user.Id))
+                        {
+                            <input class="form-control" @bind="@user.Address" />
+                        }
+                        else
+                        {
+                            @user.Address
+                        }
+                    </td>
+                    <td>
+                        @if (editingList.Contains(user.Id))
+                        {
+                            <input type="checkbox" @bind="@user.Disabled" />
+                        }
+                        else
+                        {
+                            @(user.Disabled ? "Igen" : "Nem")
+                        }
+                    </td>
+                    <td>
+                        <button class="btn btn-primary" @onclick="() => ToggleEdit(user.Id)">
+                            @if (editingList.Contains(user.Id))
+                            {
+                                <span>Mentés</span>
+                            }
+                            else
+                            {
+                                <span>Szerkesztés</span>
+                            }
+                        </button>
+
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <h3>Új felhasználó</h3>
+    <div class="align-content-center">
+        <form @onsubmit="AddUser" class="mt-4">
+            <div class="mb-3 small-input">
+                <label for="newUserName" class="form-label">Név:</label>
+                <input type="text" id="newUserName" @bind="newUser.Name" class="form-control" />
+            </div>
+
+            <div class="mb-3 small-input">
+                <label for="newUserEmail" class="form-label">Email:</label>
+                <input type="text" id="newUserEmail" @bind="newUser.Email" class="form-control" />
+            </div>
+
+            <div class="mb-3 small-input">
+                <label for="newUserAddress" class="form-label">Lakcím:</label>
+                <input type="text" id="newUserAddress" @bind="newUser.Address" class="form-control" />
+            </div>
+
+            <div class="mb-3 small-input">
+                <label for="userRole" class="form-label">Jogosultság:</label>
+                <select id="userRole" @bind="selectedRole" class="form-select">
+                    @foreach (var role in Enum.GetValues(typeof(Role)))
+                    {
+                        <option value="@role">@role</option>
+                    }
+                </select>
+            </div>
+
+            <div class="mb-3 form-check">
+                <input type="checkbox" id="newUserDisabled" @bind="newUser.Disabled" class="form-check-input" />
+                <label for="newUserDisabled" class="form-check-label">Mozgáskorlátozott</label>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Add User</button>
+
+            <div class="text-danger">@errorText</div>
+        </form>
+    </div>
+</AuthorizeView>
+
+<AuthorizeView Roles=@Role.USER.ToString()>
+    <p>Nincs jogosultságod a felhasználók megtekintéséhez!</p>
+</AuthorizeView>
+
+
+@code {
+    private UserDto selectedUser;
+    private UserDto newUser = new UserDto();
+    private List<UserDto> users = new List<UserDto>();
+    List<int> editingList = new List<int>();
+    private Role selectedRole = Role.USER;
+    private string errorText = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        //add example users
+        users.Add(new UserDto { Id = 1, Name = "John Doe", Email = "test@test.com", Disabled = false });
+        users.Add(new UserDto
+            {
+                Id = 2,
+                Name = "Jane Doe",
+                Email = "okay@gmail.com"
+            });
+        users = await _userService.GetAllUsers();
+    }
+
+    async Task ToggleEdit(int userId)
+    {
+        if (editingList.Contains(userId))
+        {
+            editingList.Remove(userId);
+            // await user.UpdateParkingPlace(parkingPlaces.Find(x => x.ID == placeId));
+
+        }
+        else
+        {
+            editingList.Add(userId);
+        }
+    }
+
+
+    private void EditUser()
+    {
+        // Implement the logic to edit the selected user
+    }
+
+    private async Task AddUser()
+    {
+        try
+        {
+            var user = await _userService.CreateUser(newUser, selectedRole);
+            users.Add(user);
+        }
+        catch (Exception e)
+        {
+            errorText = e.Message;
+        }
+   
+
+        newUser = new UserDto(); // Clear the form after adding the user
+    }
+}

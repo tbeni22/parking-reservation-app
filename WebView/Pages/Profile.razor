@@ -1,0 +1,48 @@
+﻿@using BusinessLogic.DTOs
+@using DataAccess.Data
+@using Microsoft.AspNetCore.Identity
+@using System.Security.Claims
+@page "/profile"
+@inject UserManager<User> UserManager
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+@inherits ComponentBase
+
+<h1>User Profile</h1>
+<div>
+    <div>
+        <strong>ID:</strong> @userDto.Id
+    </div>
+    <div>
+        <strong>Name:</strong> @userDto.Name
+    </div>
+    <div>
+        <strong>Email:</strong> @userDto.Email
+    </div>
+    <div>
+        <strong>Address:</strong> @userDto.Address
+    </div>
+    <div>
+        <strong>Disabled:</strong> @userDto.Disabled
+    </div>
+    <div>
+        <strong>Role:</strong> @role
+    </div>
+    <!-- Additional fields or actions -->
+</div>
+
+@code {
+    
+    private UserDto userDto = new UserDto();
+    private string role = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authstate = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var authUser = authstate.User;
+        var user = await UserManager.GetUserAsync(authUser);
+        userDto = UserDto.FromUser(user);
+        role = (await UserManager.GetRolesAsync(user)).FirstOrDefault();
+    }
+}
