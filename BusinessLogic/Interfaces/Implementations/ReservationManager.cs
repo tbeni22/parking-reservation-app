@@ -219,6 +219,37 @@ namespace BusinessLogic.Interfaces.Implementations
             };
         }
 
+        public async Task<List<ParkingPlaceDto>> GetFreeSpaces(DateTime Start, DateTime End)
+        {
+            List<ParkingPlaceDto> freeSpacesList = new List<ParkingPlaceDto>();
+
+            var reserved = await (from reservation in context.Reservations
+                                  where Start.CompareTo(reservation.Beginning) >= 0 && Start.CompareTo(reservation.Ending) <= 0
+                                        && End.CompareTo(reservation.Beginning) >= 0 && End.CompareTo(reservation.Ending) <= 0
+                                  select reservation)
+                                  .ToListAsync();
+
+            var freeSpaces = await (from parkingPlace in context.ParkingPlaces
+                                    where !reserved.Any(reservation => reservation.ParkingPlaceId == parkingPlace.ID)
+                                    select parkingPlace)
+                                    .ToListAsync();
+
+            foreach (var f in freeSpaces)
+            {
+                freeSpacesList.Add(
+                    new ParkingPlaceDto()
+                    {
+                        ID = f.ID,
+                        Name = f.Name,
+                        DisabledParking = f.DisabledParking,
+                        Reservations = new List<ReservationDto>()
+                    }
+                );
+            }
+
+            return freeSpacesList;
+        }
+
         public UserDto ConvertToUserDto(User user)
         {
             return new UserDto()
