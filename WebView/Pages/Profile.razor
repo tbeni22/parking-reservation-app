@@ -9,43 +9,40 @@
 
 @inherits ComponentBase
 
-<div class="container mt-5">
-    <h1>My Profile</h1>
-    <div class="row mt-4">
-        <div class="col-md-6">
-            <h3>User Information</h3>
-            <hr />
-            <div class="mb-3">
-                <strong>ID:</strong> @UserDto.Id
-            </div>
-            <div class="mb-3">
-                <strong>Name:</strong> @UserDto.Name
-            </div>
-            <div class="mb-3">
-                <strong>Email:</strong> @UserDto.Email
-            </div>
-            <div class="mb-3">
-                <strong>Address:</strong> @UserDto.Address
-            </div>
-            <div class="mb-3">
-                <strong>Disabled:</strong> @UserDto.Disabled
-            </div>
-        </div>
-        <div class="col-md-6">
-            <!-- Other information or actions -->
-        </div>
+<h1>User Profile</h1>
+<div>
+    <div>
+        <strong>ID:</strong> @userDto.Id
     </div>
+    <div>
+        <strong>Name:</strong> @userDto.Name
+    </div>
+    <div>
+        <strong>Email:</strong> @userDto.Email
+    </div>
+    <div>
+        <strong>Address:</strong> @userDto.Address
+    </div>
+    <div>
+        <strong>Disabled:</strong> @userDto.Disabled
+    </div>
+    <div>
+        <strong>Role:</strong> @role
+    </div>
+    <!-- Additional fields or actions -->
 </div>
 
 @code {
-    [Parameter]
-    public UserDto UserDto { get; set; }
+    
+    private UserDto userDto = new UserDto();
+    private string role = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
         var authstate = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = authstate.User;
-        var name = user.Identity.Name;
-        
+        var authUser = authstate.User;
+        var user = await UserManager.GetUserAsync(authUser);
+        userDto = UserDto.FromUser(user);
+        role = (await UserManager.GetRolesAsync(user)).FirstOrDefault();
     }
 }

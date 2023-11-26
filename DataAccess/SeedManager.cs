@@ -25,7 +25,6 @@ namespace DataAccess
 
             await roleManager.CreateAsync(new IdentityRole<int>(Role.ADMIN.ToString()));
             await roleManager.CreateAsync(new IdentityRole<int>(Role.USER.ToString()));
-            await roleManager.CreateAsync(new IdentityRole<int>("teszt"));
         }
 
         private static async Task SeedAdminUser(IServiceProvider services)
@@ -42,10 +41,16 @@ namespace DataAccess
 
             if (adminUser is null)
             {
-                adminUser = new User { UserName = "admin", Email = "admin.admin@gmail.com" };
+                adminUser = new User { UserName = "admin@gmail.com", Email = "admin@gmail.com" };
                 await userManager.CreateAsync(adminUser, "VerySecretPassword!1");
                 await userManager.AddToRoleAsync(adminUser, Role.ADMIN.ToString());
+
+                var basicUser = new User { UserName = "test@gmail.com", Email = "test@gmail.com" };
+                await userManager.CreateAsync(basicUser, "adMIN1234!");
+                await userManager.AddToRoleAsync(adminUser, Role.USER.ToString());
             }
+
+            
         }
     }
 

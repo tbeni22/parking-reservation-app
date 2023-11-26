@@ -35,7 +35,7 @@ namespace BusinessLogic.Interfaces.Implementations
             if (result.Succeeded)
                 return dto;
             else
-                return null;
+                throw new System.Exception($"User creation failed. {result.Errors.First().Description}");
         }
 
         public async Task DeleteUser(int id)
@@ -123,6 +123,16 @@ namespace BusinessLogic.Interfaces.Implementations
         {
             await userManager.AddToRoleAsync(user, "TESZT");
 
+        }
+
+        public async Task<List<UserDto>> GetAllUsers()
+        {
+            //retreive all users from db
+            var users = await context.User.ToListAsync();
+            //convert them to DTOs
+            var dtos = users.Select(u => UserDto.FromUser(u)).ToList();
+            //return the list
+            return dtos;
         }
 
         public class UserNotfoundException : Exception

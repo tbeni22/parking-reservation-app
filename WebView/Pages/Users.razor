@@ -13,6 +13,7 @@
 
 <AuthorizeView Roles=@Role.ADMIN.ToString()>
     <h3>Felhasználók</h3>
+    
     <table class="table table-bordered table-striped">
         <thead class="thead-dark">
             <tr>
@@ -121,18 +122,15 @@
             </div>
 
             <button type="submit" class="btn btn-primary">Add User</button>
+
+            <div class="text-danger">@errorText</div>
         </form>
     </div>
-</AuthorizeView >
+</AuthorizeView>
 
 <AuthorizeView Roles=@Role.USER.ToString()>
     <p>Nincs jogosultságod a felhasználók megtekintéséhez!</p>
 </AuthorizeView>
-
-
-
-
-
 
 
 @code {
@@ -141,6 +139,7 @@
     private List<UserDto> users = new List<UserDto>();
     List<int> editingList = new List<int>();
     private Role selectedRole = Role.USER;
+    private string errorText = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -152,6 +151,7 @@
                 Name = "Jane Doe",
                 Email = "okay@gmail.com"
             });
+        users = await _userService.GetAllUsers();
     }
 
     async Task ToggleEdit(int userId)
@@ -169,7 +169,6 @@
     }
 
 
-
     private void EditUser()
     {
         // Implement the logic to edit the selected user
@@ -177,7 +176,17 @@
 
     private async Task AddUser()
     {
-        await _userService.CreateUser(newUser, selectedRole);
+        try
+        {
+            var user = await _userService.CreateUser(newUser, selectedRole);
+            users.Add(user);
+        }
+        catch (Exception e)
+        {
+            errorText = e.Message;
+        }
+   
+
         newUser = new UserDto(); // Clear the form after adding the user
     }
 }

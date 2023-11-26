@@ -16,6 +16,7 @@ namespace BusinessLogic.Interfaces
         Task<UserDto> UpdateUser(UserDto user);
         Task DeleteUser(int id);
         Task<UserDto> GetUser(int id);
+        Task<List<UserDto>> GetAllUsers();
         Task<UserDto> GetUserByEmail(string email);
         Task<bool> UpdatePassword(UserDto dto, string password, string oldPassword = null);
 

@@ -54,6 +54,8 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 builder.Services.AddScoped(typeof(IStatistics), typeof(StatisticsService));
 builder.Services.AddScoped(typeof(IUserManagement), typeof(UserService));
+builder.Services.AddScoped(typeof(IParkingPlace), typeof(ParkingService));
+
 
 var app = builder.Build();
 
