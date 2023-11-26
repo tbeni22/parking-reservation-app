@@ -17,32 +17,28 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 
-
 var connectionString = builder.Configuration.GetConnectionString("ParkingContext") ?? throw new InvalidOperationException("Connection string not found.");
 builder.Services.AddDbContext<ParkingContext>(options => options.UseNpgsql(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-builder.Services.AddScoped(typeof(IParkingPlace), typeof(ParkingService));
 
-<<<<<<<<< Temporary merge branch 1
-builder.Services.AddScoped(typeof(IStatistics), typeof(StatisticsService));
 
-builder.Services.AddDefaultIdentity<IdentityUser>
-    (options =>
-    {
-        options.SignIn.RequireConfirmedAccount = false;
-        options.User.RequireUniqueEmail = true;
-        options.Stores.ProtectPersonalData = true;
-        options.Password.RequireDigit = true;
-        options.Password.RequiredLength = 6;
-        options.Password.RequireNonAlphanumeric = true;
-        options.Password.RequireUppercase = true;
-        options.Password.RequireLowercase = true;
-    })
-.AddEntityFrameworkStores<ParkingContext>();
-=========
-builder.Services.AddDefaultIdentity<User>(options => { })
-.AddEntityFrameworkStores<ParkingContext>().AddDefaultTokenProviders();
->>>>>>>>> Temporary merge branch 2
+//Todo: add options to service
+//builder.Services.AddIdentity<User, IdentityRole<int>>()
+//.AddEntityFrameworkStores<ParkingContext>();
+
+builder.Services.AddDefaultIdentity<User>(options => {
+    options.SignIn.RequireConfirmedAccount = false;
+    options.User.RequireUniqueEmail = true;
+    options.Password.RequireDigit = true;
+    options.Password.RequiredLength = 6;
+    options.Password.RequireNonAlphanumeric = true;
+    options.Password.RequireUppercase = true;
+    options.Password.RequireLowercase = true;
+})
+    .AddRoles<IdentityRole<int>>()
+    .AddRoleManager<RoleManager<IdentityRole<int>>>()
+    .AddEntityFrameworkStores<ParkingContext>();
+
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
@@ -56,8 +52,8 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 });
 
-builder.Services.AddScoped(typeof(WeatherForecastService));
 builder.Services.AddScoped(typeof(IStatistics), typeof(StatisticsService));
+builder.Services.AddScoped(typeof(IUserManagement), typeof(UserService));
 
 var app = builder.Build();
 
@@ -74,6 +70,8 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+app.UseAuthentication();
+app.UseAuthorization();
 
 
 app.MapBlazorHub();
