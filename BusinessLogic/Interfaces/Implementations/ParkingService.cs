@@ -37,27 +37,20 @@ namespace BusinessLogic.Interfaces.Implementations
             };
         }
 
-        public async Task<ParkingPlaceDto> DeleteParkingPlace(ParkingPlaceDto place)
+        public async Task DeleteParkingPlace(ParkingPlaceDto place)
         {
-            return await DeleteParkingPlace(place.ID);
+            await DeleteParkingPlace(place.ID);
         }
 
 
-        public async Task<ParkingPlaceDto> DeleteParkingPlace(int ID)
+        public async Task DeleteParkingPlace(int ID)
         {
             var entity = await context.ParkingPlaces.FindAsync(ID);
             if (entity != null)
             {
                 context.ParkingPlaces.Remove(entity);
                 await context.SaveChangesAsync();
-            }
-            return new ParkingPlaceDto()
-            {
-                ID = entity.ID,
-                Name = entity.Name,
-                DisabledParking = entity.DisabledParking,
-                Reservations = entity.Reservations.Select(ReservationDto.FromReservation).ToList()
-            }; ;
+            }          
         }
 
 

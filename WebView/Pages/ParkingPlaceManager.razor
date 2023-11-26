@@ -88,8 +88,11 @@
                             <span>Szerkesztés</span>
                         }
                     </button>
-                    <button class="btn btn-primary" @onclick="() => ShowReservations(place.ID)">
+                    <button class="btn btn-secondary" @onclick="() => ShowReservations(place.ID)">
                         <span>Foglalások</span>
+                    </button>
+                    <button class="btn btn-danger" @onclick="() => DeleteParkingPlace(place.ID)">
+                        <span>Törlés</span>
                     </button>
                 </td>
             </tr>
@@ -167,6 +170,12 @@
     void ClosePopup()
     {
         showPopup = false;
+    }
+
+    async Task DeleteParkingPlace(int placeId)
+    {
+        await parkingService.DeleteParkingPlace(placeId);
+        parkingPlaces.Remove(parkingPlaces.Find(x => x.ID == placeId));
     }
 
     void ShowReservations(int placeId)
