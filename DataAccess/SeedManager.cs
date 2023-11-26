@@ -34,7 +34,7 @@ namespace DataAccess
             var roleManager = services.GetRequiredService<RoleManager<IdentityRole<int>>>();
 
             var query = from user in context.User
-                        where user.UserName == "AuthenticationAdmin"
+                        where user.UserName == "admin@gmail"
                         select user;
 
             var adminUser = await query.FirstOrDefaultAsync();

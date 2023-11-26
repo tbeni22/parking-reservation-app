@@ -90,9 +90,9 @@
         // data for bar chart
         for (int i = 3; i >= 0; i--)
         {
-            var endDate = DateOnly.FromDateTime(DateTime.Now).AddDays(-i * 7);
+            var endDate = DateTime.Now.AddDays(-i * 7);
             var average = await statisticsService.GetAverageNumOfDays(endDate);
-            var data = new WeeklyAverage { Average = average, StartDate = endDate.AddDays(-6) };
+            var data = new WeeklyAverage { Average = average, StartDate = DateOnly.FromDateTime(endDate.AddDays(-6)) };
             WeeklyAverages.Add(data);
         }
 

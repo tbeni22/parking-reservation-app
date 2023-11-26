@@ -83,11 +83,13 @@ namespace BusinessLogic.Interfaces.Implementations
                 if (oldPassword != null)
                 {
                     var result = await userManager.ChangePasswordAsync(user, oldPassword, password);
+                    await context.SaveChangesAsync();
                     return result.Succeeded;
                 }
                 else
                 {
                     var result = await userManager.AddPasswordAsync(user, password);
+                    await context.SaveChangesAsync();
                     return result.Succeeded;
                 }
 
@@ -119,9 +121,9 @@ namespace BusinessLogic.Interfaces.Implementations
             await signInManager.SignOutAsync();
         }
 
-        public async Task AddUserRole(User user, string Role = "User")
+        public async Task AddUserRole(User user, string role = "User")
         {
-            await userManager.AddToRoleAsync(user, "TESZT");
+            await userManager.AddToRoleAsync(user, role);
 
         }
 

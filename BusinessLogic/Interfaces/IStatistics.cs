@@ -12,8 +12,8 @@ namespace BusinessLogic.Interfaces
 
         Task<int> getWeeklyFailedReservationCount(DateOnly beginning);
 
-        Task<double> getWeeklyAverageHours(DateOnly beginning);
+        Task<double> getWeeklyAverageHours(DateTime beginning);
 
-        Task<double> GetAverageNumOfDays(DateOnly referenceEnd);
+        Task<double> GetAverageNumOfDays(DateTime referenceEnd);
     }
 }
