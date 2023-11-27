@@ -14,18 +14,19 @@ namespace BusinessLogic.Interfaces
         private readonly PeriodicTimer _periodicTimer = new PeriodicTimer(TimeSpan.FromDays(1));
         private readonly IServiceScopeFactory scopeFactory;
         private readonly IConfiguration config;
-
+        private readonly Logger<EmailService> logger;
         private readonly DateTime sendingTime = DateTime.Now.Date.AddHours(21).AddMinutes(42);
 
         public CancellationToken token { get; set; }
 
-        public EmailService(IServiceScopeFactory scopeFactory, IConfiguration config)
+        public EmailService(IServiceScopeFactory scopeFactory, IConfiguration config, Logger<EmailService> logger)
         {
 
             CancellationTokenSource source = new CancellationTokenSource();
             token = source.Token;
             this.scopeFactory = scopeFactory;
             this.config = config;
+            this.logger = logger;
             startEmailService(token);
         }
 
@@ -85,6 +86,14 @@ namespace BusinessLogic.Interfaces
                                          select reservation;
 
                 var reservationsList = await reservationsQuerry.Include("User").ToListAsync();
+
+                client.SendCompleted += (obj, ev) =>
+                {
+                    if (ev.Error != null)
+                    {
+                        logger.LogError(ev.Error, "An error occured while sending email");
+                    }
+                };
 
                 foreach (var reservation in reservationsList)
                 {
