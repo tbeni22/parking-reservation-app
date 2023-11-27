@@ -86,9 +86,14 @@ using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
 
-    var emailService = services.GetService<EmailService>();
+    var db = services.GetService<ParkingContext>();
+
+    db.Database.Migrate();
 
     await SeedManager.Seed(services);
+
+    var emailService = services.GetService<EmailService>();
+
 }
 
 app.Run();

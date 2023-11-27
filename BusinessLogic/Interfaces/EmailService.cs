@@ -1,5 +1,6 @@
 ﻿using DataAccess;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Net;
@@ -12,19 +13,19 @@ namespace BusinessLogic.Interfaces
 
         private readonly PeriodicTimer _periodicTimer = new PeriodicTimer(TimeSpan.FromDays(1));
         private readonly IServiceScopeFactory scopeFactory;
-        private readonly ILogger<EmailService> logger;
+        private readonly IConfiguration config;
 
-        private readonly DateTime sendingTime = DateTime.Now.Date.AddHours(20);
+        private readonly DateTime sendingTime = DateTime.Now.Date.AddHours(21).AddMinutes(42);
 
         public CancellationToken token { get; set; }
 
-        public EmailService(IServiceScopeFactory scopeFactory, ILogger<EmailService> logger)
+        public EmailService(IServiceScopeFactory scopeFactory, IConfiguration config)
         {
 
             CancellationTokenSource source = new CancellationTokenSource();
             token = source.Token;
             this.scopeFactory = scopeFactory;
-            this.logger = logger;
+            this.config = config;
             startEmailService(token);
         }
 
@@ -65,7 +66,7 @@ namespace BusinessLogic.Interfaces
 
             var password = "mustUsePassword";
 
-            var client = new SmtpClient("localhost", 2525)
+            var client = new SmtpClient(config.GetSection("SMTPConnection").GetValue<string>("host"), config.GetSection("SMTPConnection").GetValue<int>("port"))
             {
                 UseDefaultCredentials = true
             };
