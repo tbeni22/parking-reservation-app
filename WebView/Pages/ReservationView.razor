@@ -1,6 +1,23 @@
 ﻿@page "/reserve"
 @inject IReservation reservationService
 
+<style>
+    button.btn {
+        background-color: #00695C;
+        color: white;
+    }
+
+    button.btn:hover {
+        background-color: #009688;
+    }
+
+    .error {
+        margin-top: 16px;
+        text-align: center;
+        color: red;
+    }
+</style>
+
 <div style="text-align: center;" class="title-section">
     <h2 style="font-weight: bold">Foglalások</h2>
     <h4>Új foglalás</h4>
@@ -79,8 +96,14 @@
                 }
             </div>
             <div class="d-flex justify-content-center">
-                <button class="btn" style="width: 150px;background-color: #00695C; color: white;" @onclick="Reserve">Véglegesítés</button>
+                <button class="btn" style="width: 150px;" @onclick="Reserve">Véglegesítés</button>
             </div>
+            @if (errorMessage.Length > 0)
+            {
+                <div class="error" role="alert">
+                    @errorMessage
+                </div>
+            }
         </div>
     </div>
 </div>
@@ -105,7 +128,7 @@
                     @(reservation.Beginning.ToString() + " - " + reservation.Ending.ToString())
                 </td>
                 <td>
-                    <button class="btn" style="background-color: #00695C; color: white;" @onclick="() => Delete(reservation.ID)">
+                    <button class="btn" @onclick="() => Delete(reservation.ID)">
                         Törlés
                     </button>
                 </td>
@@ -123,6 +146,7 @@
 
     private ReservationDto newReservation = new ReservationDto();
     private bool validDate = false;
+    private string errorMessage = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -156,6 +180,13 @@
 
     private async Task Reserve()
     {
+        errorMessage = "";
+        if (newReservation.ParkingPlaceId <= 0)
+        {
+            ShowError("Válasszon parkolóhelyet!");
+            return;
+        }
+
         if (repeated)
         {
             var data = new RepeatingReservation
@@ -168,22 +199,34 @@
             var result = await reservationService.NewRepeatingReservation(data);
             if (!result)
             {
-                // todo: display error
+                ShowError("Nem sikerült a foglalás");
             }
         }
         else
         {
-            var result = await reservationService.NewReservation(newReservation);
-            if (result != null)
+            try
             {
-                reservationList.Add(result);
-                StateHasChanged();
+                var result = await reservationService.NewReservation(newReservation);
+                if (result != null)
+                {
+                    reservationList.Add(result);
+                    StateHasChanged();
+                }
+                else
+                {
+                    ShowError("Nem sikerült a foglalás");
+                }
             }
-            else
+            catch
             {
-                // todo: display error
+                ShowError();
             }
         }
+    }
+
+    private void ShowError(string msg = "Hiba lépett fel")
+    {
+        errorMessage = msg;
     }
 
     private async Task RefreshAvailablePlaces()
@@ -193,6 +236,13 @@
         {
             availablePlaces = await reservationService.GetFreeSpaces(newReservation.Beginning, newReservation.Ending);
         }
+        var emptySelection = new ParkingPlaceDto
+            {
+                ID = 0,
+                Name = "Kérem válasszon...",
+                DisabledParking = false
+            };
+        availablePlaces.Insert(0, emptySelection);
 
         // sample
         /*Random rnd = new Random();
