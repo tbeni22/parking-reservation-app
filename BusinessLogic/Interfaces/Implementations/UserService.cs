@@ -26,11 +26,11 @@ namespace BusinessLogic.Interfaces.Implementations
             this.signInManager = signInManager;
             this.accessor = accessor;
         }
-        public async Task<UserDto> CreateUser(UserDto dto, Role role, string password="ChangeThis#!4")
+        public async Task<UserDto> CreateUser(UserDto dto, Role role, string password = "ChangeThis#!4")
         {
             var user = Activator.CreateInstance<User>();
             user.SecurityStamp = Guid.NewGuid().ToString();
-            
+
             user.UserName = dto.Email;
             user.Email = dto.Email;
             user.Name = dto.Name;
@@ -45,7 +45,6 @@ namespace BusinessLogic.Interfaces.Implementations
 
         public async Task DeleteUser(int id)
         {
-
             var user = await context.User.FindAsync(id);
             if (user != null)
             {
@@ -89,6 +88,9 @@ namespace BusinessLogic.Interfaces.Implementations
                 {
                     var result = await userManager.ChangePasswordAsync(user, oldPassword, password);
                     await context.SaveChangesAsync();
+                    if(!result.Succeeded)
+                        throw new System.Exception($"Password change failed. {result.Errors.First().Description}");
+                    
                     return result.Succeeded;
                 }
                 else
@@ -107,9 +109,13 @@ namespace BusinessLogic.Interfaces.Implementations
             var dbUser = await context.User.FindAsync(user.Id);
             if (dbUser != null)
             {
-                dbUser.UserName = user.Name;
+
+                dbUser.Name = user.Name;
+                dbUser.Address = user.Address;
+                dbUser.Disabled = user.Disabled;
                 dbUser.Email = user.Email;
-                dbUser.Reservations = new List<Reservation>(user.Reservations);
+                dbUser.Reservations = user.Reservations;
+
                 await context.SaveChangesAsync();
             }
             return user;

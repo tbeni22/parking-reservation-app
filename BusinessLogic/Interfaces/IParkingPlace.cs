@@ -18,8 +18,8 @@ namespace BusinessLogic.Interfaces
 
         Task<List<ParkingPlaceDto>> GetParkingPlaces(int limit = int.MaxValue);
 
-        Task<ParkingPlaceDto> DeleteParkingPlace(int ID);
-        Task<ParkingPlaceDto> DeleteParkingPlace(ParkingPlaceDto place);
+        Task DeleteParkingPlace(int ID);
+        Task DeleteParkingPlace(ParkingPlaceDto place);
 
         Task<ParkingPlaceDto> UpdateParkingPlace(ParkingPlaceDto pp);
     }
