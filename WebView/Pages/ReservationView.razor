@@ -1,5 +1,6 @@
 ﻿@page "/reserve"
 @inject IReservation reservationService
+@inject IUserManagement userService
 
 <style>
     button.btn {
@@ -139,7 +140,7 @@
 
 
 @code {
-    int userId = 1; // todo: get from session
+    int userId = 1;
 
     List<ReservationDto> reservationList = new List<ReservationDto>();
     List<ParkingPlaceDto> availablePlaces = new List<ParkingPlaceDto>();
@@ -150,6 +151,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+        userId = (await userService.GetCurrentUser()).Id;
         newReservation.Ending = DateTime.Now;
         newReservation.Beginning = DateTime.Now;
         reservationList = await reservationService.GetReservationsForUser(userId);
