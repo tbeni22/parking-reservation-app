@@ -1,7 +1,5 @@
 using DataAccess;
 using Microsoft.EntityFrameworkCore;
-using BuisnessLogic.Interfaces;
-using BuisnessLogic.Interfaces.Implementations;
 using DataAccess.Data;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.AspNetCore.Identity;
@@ -55,9 +53,13 @@ builder.Services.ConfigureApplicationCookie(options =>
 builder.Services.AddScoped(typeof(IStatistics), typeof(StatisticsService));
 builder.Services.AddScoped(typeof(IUserManagement), typeof(UserService));
 builder.Services.AddScoped(typeof(IParkingPlace), typeof(ParkingService));
+builder.Services.AddScoped(typeof(IReservation), typeof(ReservationManager));
 
 
 var app = builder.Build();
+
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

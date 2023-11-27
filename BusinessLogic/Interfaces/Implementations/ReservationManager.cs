@@ -14,10 +14,12 @@ namespace BusinessLogic.Interfaces.Implementations
     public class ReservationManager : IReservation
     {
         private ParkingContext context;
+        private IUserManagement userService;
 
-        public ReservationManager(ParkingContext context)
+        public ReservationManager(ParkingContext context, IUserManagement userService)
         {
             this.context = context;
+            this.userService = userService;
         }
 
         public async Task<List<ReservationDto>> GetReservationsForUser(int userId)
@@ -26,7 +28,7 @@ namespace BusinessLogic.Interfaces.Implementations
                         where reservation.UserId == userId
                         select reservation;
 
-            var entities = await query.ToListAsync();
+            var entities = await query.Include(e => e.ParkingPlace).ToListAsync();
             List<ReservationDto> result = new List<ReservationDto>();
             foreach (var entity in entities)
                 result.Add(
@@ -36,8 +38,7 @@ namespace BusinessLogic.Interfaces.Implementations
                         Beginning = entity.Beginning,
                         Ending = entity.Ending,
                         ParkingPlaceId = entity.ParkingPlaceId,
-                        ParkingPlaceName = entity.ParkingPlace.Name,
-                        User = ConvertToUserDto(entity.User)
+                        ParkingPlaceName = entity.ParkingPlace.Name
                     }
                 );
             return result;
@@ -57,13 +58,14 @@ namespace BusinessLogic.Interfaces.Implementations
                     Ending = entity.Ending,
                     ParkingPlaceId = entity.ParkingPlaceId,
                     ParkingPlaceName = entity.ParkingPlace.Name,
-                    User = ConvertToUserDto(entity.User)
+                    User = UserDto.FromUser(entity.User)
                 };
             else return null;
         }
 
         public async Task<ReservationDto> NewReservation(ReservationDto data)
         {
+            var currentUser = await userService.GetCurrentUser();
 
             Reservation newreservation = new Reservation()
                 {
@@ -71,8 +73,8 @@ namespace BusinessLogic.Interfaces.Implementations
                     Beginning = data.Beginning,
                     Ending = data.Ending,
                     ParkingPlaceId = data.ParkingPlaceId,
-                    UserId = data.User.Id
-                };
+                    UserId = currentUser.Id
+            };
 
             var query = from reservation in context.Reservations
                         where reservation.ParkingPlace.ID == data.ParkingPlaceId
@@ -82,26 +84,27 @@ namespace BusinessLogic.Interfaces.Implementations
 
             var query2 = from parkingplace in context.ParkingPlaces
                         where parkingplace.DisabledParking == true
-                        && parkingplace.ID == parkingplace.ID
+                        && parkingplace.ID == data.ParkingPlaceId
                         select parkingplace;
 
 
             var query3 = (from reservation in context.Reservations
-                         where reservation.User.Id == data.User.Id
+                         where reservation.User.Id == currentUser.Id
                          select (reservation.Ending - reservation.Beginning).TotalHours)
                          .Sum();
 
             var entities = await query.ToListAsync();
             var disabled = await query2.FirstOrDefaultAsync();
+
             /*mozgássérült hely van*/
             if (disabled != null)
             {
-                if (entities.Count == 0 && data.User.Disabled == true && ((data.Ending-data.Beginning).TotalHours + query3) <= 12)
+                if (entities.Count == 0 && currentUser.Disabled == true && ((data.Ending-data.Beginning).TotalHours + query3) <= 12)
                 {
                     var created = await context.Reservations.AddAsync(newreservation);
                     context.SaveChanges();
                     var entity = created.Entity;
-                    return data;
+                    return ReservationDto.FromReservation(entity);
                 }
             }
             else
@@ -111,16 +114,70 @@ namespace BusinessLogic.Interfaces.Implementations
                     var created = await context.Reservations.AddAsync(newreservation);
                     context.SaveChanges();
                     var entity = created.Entity;
-                    return data;
+                    return ReservationDto.FromReservation(entity);
                 }
             }
 
             return null;
         }
 
-        public Task<int> NewRepeatingReservation(RepeatingReservation data)
+        public async Task<bool> NewRepeatingReservation(RepeatingReservation data)
         {
-            throw new NotImplementedException();
+            List<ReservationDto> reservations = new List<ReservationDto>();
+            switch (data.Rate)
+            {
+                case RepetitionRate.Daily:
+                    for (int i = 0; i < data.RepeateFor; i++)
+                    {
+                        reservations.Add(
+                            new ReservationDto()
+                            {
+                                Beginning = data.FirstOccurence.Beginning.AddDays(i),
+                                Ending = data.FirstOccurence.Beginning.AddDays(i),
+                                ParkingPlaceId = data.FirstOccurence.ParkingPlaceId,
+                                ParkingPlaceName = data.FirstOccurence.ParkingPlaceName,
+                                User = data.FirstOccurence.User
+                            }
+                        );
+                    }
+                    break;
+                case RepetitionRate.Weekly:
+                    for (int i = 0; i < data.RepeateFor; i++)
+                    {
+                        reservations.Add(
+                            new ReservationDto()
+                            {
+                                Beginning = data.FirstOccurence.Beginning.AddDays(i*7),
+                                Ending = data.FirstOccurence.Beginning.AddDays(i*7),
+                                ParkingPlaceId = data.FirstOccurence.ParkingPlaceId,
+                                ParkingPlaceName = data.FirstOccurence.ParkingPlaceName,
+                                User = data.FirstOccurence.User
+                            }
+                        );
+                    }
+                    break;  
+            }
+
+            bool isReserved = false;
+            foreach (ReservationDto res in reservations)
+            {
+                if (await NewReservationRepeat(res) == false)
+                {
+                    isReserved = true;
+                }
+            }
+
+            if( !isReserved )
+            {
+                foreach (ReservationDto res in reservations)
+                {
+                    await NewReservation(res);
+                }
+                return true;
+            }
+
+            return false;
+
         }
 
         public async Task<ReservationDto> DeleteReservation(int reservationId)
@@ -137,8 +194,7 @@ namespace BusinessLogic.Interfaces.Implementations
                 Beginning = entity.Beginning,
                 Ending = entity.Ending,
                 ParkingPlaceId = entity.ParkingPlaceId,
-                ParkingPlaceName = entity.ParkingPlace.Name,
-                User = ConvertToUserDto(entity.User)
+                ParkingPlaceName = entity.ParkingPlace.Name
             };
         }
 
@@ -164,15 +220,85 @@ namespace BusinessLogic.Interfaces.Implementations
             };
         }
 
-        public UserDto ConvertToUserDto(User user)
+        public async Task<List<ParkingPlaceDto>> GetFreeSpaces(DateTime Start, DateTime End)
         {
-            return new UserDto()
+            List<ParkingPlaceDto> freeSpacesList = new List<ParkingPlaceDto>();
+
+            var reserved = await (from reservation in context.Reservations
+                                  where Start.CompareTo(reservation.Beginning) >= 0 && Start.CompareTo(reservation.Ending) <= 0
+                                        && End.CompareTo(reservation.Beginning) >= 0 && End.CompareTo(reservation.Ending) <= 0
+                                  select reservation.ParkingPlaceId)
+                                  .ToListAsync();
+
+            var freeSpaces = await (from parkingPlace in context.ParkingPlaces
+                                    where !reserved.Contains(parkingPlace.ID)
+                                    select parkingPlace)
+                                    .ToListAsync();
+
+            foreach (var f in freeSpaces)
             {
-                Id = user.Id,
-                Name = user.UserName,
-                Email = user.Email,
-                Reservations = user.Reservations
+                freeSpacesList.Add(
+                    new ParkingPlaceDto()
+                    {
+                        ID = f.ID,
+                        Name = f.Name,
+                        DisabledParking = f.DisabledParking,
+                        Reservations = new List<ReservationDto>()
+                    }
+                );
+            }
+
+            return freeSpacesList;
+        }
+
+        public async Task<bool> NewReservationRepeat(ReservationDto data)
+        {
+            var currentUser = await userService.GetCurrentUser();
+
+            Reservation newreservation = new Reservation()
+            {
+                ID = data.ID,
+                Beginning = data.Beginning,
+                Ending = data.Ending,
+                ParkingPlaceId = data.ParkingPlaceId,
+                UserId = currentUser.Id
             };
+
+            var query = from reservation in context.Reservations
+                        where reservation.ParkingPlace.ID == data.ParkingPlaceId
+                        && data.Beginning.CompareTo(reservation.Beginning) >= 0 && data.Beginning.CompareTo(reservation.Ending) <= 0
+                        && data.Ending.CompareTo(reservation.Beginning) >= 0 && data.Ending.CompareTo(reservation.Ending) <= 0
+                        select reservation;
+
+            var query2 = from parkingplace in context.ParkingPlaces
+                         where parkingplace.DisabledParking == true
+                         && parkingplace.ID == data.ParkingPlaceId
+                         select parkingplace;
+
+
+            var query3 = (from reservation in context.Reservations
+                          where reservation.User.Id == currentUser.Id
+                          select (reservation.Ending - reservation.Beginning).TotalHours)
+                         .Sum();
+
+            var entities = await query.ToListAsync();
+            var disabled = await query2.FirstOrDefaultAsync();
+            if (disabled != null)
+            {
+                if (entities.Count == 0 && currentUser.Disabled == true && ((data.Ending - data.Beginning).TotalHours + query3) <= 12)
+                {
+                   return true;
+                }
+            }
+            else
+            {
+                if (entities.Count == 0 && ((data.Ending - data.Beginning).TotalHours + query3) <= 12)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

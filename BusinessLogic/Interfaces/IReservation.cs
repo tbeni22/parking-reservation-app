@@ -16,10 +16,12 @@ namespace BusinessLogic.Interfaces
 
         Task<ReservationDto> NewReservation(ReservationDto data);
 
-        Task<int> NewRepeatingReservation(RepeatingReservation data);
+        Task<bool> NewRepeatingReservation(RepeatingReservation data);
 
         Task<ReservationDto> DeleteReservation(int reservationId);
 
         Task<FailureReport> NotifyAboutNoFreeSpace(ReservationDto slot);
+
+        Task<List<ParkingPlaceDto>> GetFreeSpaces(DateTime Start, DateTime End);
     }
 }

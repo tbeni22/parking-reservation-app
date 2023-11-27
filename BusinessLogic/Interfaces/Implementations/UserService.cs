@@ -1,9 +1,11 @@
 ﻿using BusinessLogic.DTOs;
 using DataAccess;
 using DataAccess.Data;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using static BusinessLogic.Consts;
 
 
@@ -14,12 +16,15 @@ namespace BusinessLogic.Interfaces.Implementations
         private readonly ParkingContext context;
         private readonly UserManager<User> userManager;
         private readonly SignInManager<User> signInManager;
+        private readonly IHttpContextAccessor accessor;
 
-        public UserService(ParkingContext context, UserManager<User> userManager, SignInManager<User> signInManager)
+        public UserService(ParkingContext context, UserManager<User> userManager, SignInManager<User> signInManager,
+            IHttpContextAccessor accessor)
         {
             this.context = context;
             this.userManager = userManager;
             this.signInManager = signInManager;
+            this.accessor = accessor;
         }
         public async Task<UserDto> CreateUser(UserDto dto, Role role, string password = "ChangeThis#!4")
         {
@@ -82,11 +87,13 @@ namespace BusinessLogic.Interfaces.Implementations
                 if (oldPassword != null)
                 {
                     var result = await userManager.ChangePasswordAsync(user, oldPassword, password);
+                    await context.SaveChangesAsync();
                     return result.Succeeded;
                 }
                 else
                 {
                     var result = await userManager.AddPasswordAsync(user, password);
+                    await context.SaveChangesAsync();
                     return result.Succeeded;
                 }
 
@@ -122,9 +129,9 @@ namespace BusinessLogic.Interfaces.Implementations
             await signInManager.SignOutAsync();
         }
 
-        public async Task AddUserRole(User user, string Role = "User")
+        public async Task AddUserRole(User user, string role = "User")
         {
-            await userManager.AddToRoleAsync(user, "TESZT");
+            await userManager.AddToRoleAsync(user, role);
 
         }
 
@@ -136,6 +143,21 @@ namespace BusinessLogic.Interfaces.Implementations
             var dtos = users.Select(u => UserDto.FromUser(u)).ToList();
             //return the list
             return dtos;
+        }
+
+        public async Task<UserDto> GetCurrentUser()
+        {
+            var email = accessor.HttpContext.User.FindFirstValue(ClaimTypes.Email);
+            var query = from user in context.User
+                        where user.Email == email
+                        select user;
+
+            
+            var current = await query.FirstOrDefaultAsync();
+            if (current != null)
+                return UserDto.FromUser(current);
+            else return null;
+
         }
 
         public class UserNotfoundException : Exception

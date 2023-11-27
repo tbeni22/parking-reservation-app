@@ -1,0 +1,100 @@
+﻿@page "/stats"
+@inject IStatistics statisticsService
+
+@using ApexCharts;
+
+<h3>Statisztikák</h3>
+
+<h4>Kihasználtság</h4>
+
+<ApexChart TItem="HourStat"
+           Title="Órákra bontott parkolóhely kihasználtság (%)"
+           Options="heatmapOptions">
+
+    @foreach (var oneDate in hourlyUsageStats)
+    {
+        <ApexPointSeries TItem="HourStat"
+                     Items="oneDate.Stats"
+                     Name="@oneDate.Date.ToString()"
+                     SeriesType="SeriesType.Heatmap"
+                     XValue="@(e => e.Hour)"
+                     YValue="@(e => Convert.ToInt32(e.Ratio * 100))" />
+    }
+
+</ApexChart>
+
+<ApexChart TItem="WeeklyAverage"
+           Title="Felhasználók által átlagosan foglalt napok száma">
+
+    <ApexPointSeries TItem="WeeklyAverage"
+                     Items="WeeklyAverages"
+                     Name="Heti átlag"
+                     XValue="@(e => (e.StartDate.ToString() + " - " + e.StartDate.AddDays(6).ToString()))"
+                     YValue="@(e => Convert.ToInt32(e.Average))"
+                     SeriesType="SeriesType.Bar" />
+</ApexChart>
+
+@code {
+    class DailyUsage {
+        public List<HourStat> Stats { get; set; } = new();
+        public DateOnly Date { get; set; }
+    }
+    private List<DailyUsage> hourlyUsageStats { get; set; } = new();
+    private ApexChartOptions<HourStat> heatmapOptions;
+
+    class WeeklyAverage {
+        public double Average { get; set; }
+        public DateOnly StartDate { get; set; }
+    }
+    private List<WeeklyAverage> WeeklyAverages { get; set; } = new();
+
+
+    // used for smiley sample data
+    private double GetSmileyPixel(int dateIdx, int hour) {
+        if (dateIdx == 5 && (hour == 10 || hour == 12))
+            return 1;
+        if (dateIdx == 11 - hour || (dateIdx == 1 && hour == 11))
+            return 1;
+        if (dateIdx == hour - 11 && hour <= 14)
+            return 1;
+        return 0.2;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // data for heatmap
+        for (int i = 0; i < 5; i++)
+        {
+            // get data from service
+            var dailyUsageData = await statisticsService.getUsageRatio(DateOnly.FromDateTime(DateTime.Now.AddDays(-i)));
+
+            // seed sample data
+            /*List<HourStat> dailyUsageData = new List<HourStat>();
+            for (int j = 8; j < 16; j++)
+            {
+                dailyUsageData.Add(new HourStat { Hour = j, Ratio = GetSmileyPixel(i+1, j) });
+            }*/
+
+            hourlyUsageStats.Add(new DailyUsage
+                {
+                    Stats = dailyUsageData,
+                    Date = DateOnly.FromDateTime(DateTime.Now.AddDays(-i))
+                });
+        }
+
+        heatmapOptions = new ApexChartOptions<HourStat>
+            {
+                Colors = new List<string> { "#008FFB" }
+            };
+
+        // data for bar chart
+        for (int i = 3; i >= 0; i--)
+        {
+            var endDate = DateTime.Now.AddDays(-i * 7);
+            var average = await statisticsService.GetAverageNumOfDays(endDate);
+            var data = new WeeklyAverage { Average = average, StartDate = DateOnly.FromDateTime(endDate.AddDays(-6)) };
+            WeeklyAverages.Add(data);
+        }
+
+    }
+}

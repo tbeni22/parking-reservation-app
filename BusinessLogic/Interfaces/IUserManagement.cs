@@ -23,5 +23,7 @@ namespace BusinessLogic.Interfaces
         public Task SignOutAsync();
         Task AddUserRole(User user, string Role = Consts.Roles.User);
 
+        Task<UserDto> GetCurrentUser();
+
     }
 }
