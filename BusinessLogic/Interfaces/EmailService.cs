@@ -14,14 +14,14 @@ namespace BusinessLogic.Interfaces
         private readonly PeriodicTimer _periodicTimer = new PeriodicTimer(TimeSpan.FromDays(1));
         private readonly IServiceScopeFactory scopeFactory;
         private readonly IConfiguration config;
-        private readonly Logger<EmailService> logger;
-        private readonly DateTime sendingTime = DateTime.Now.Date.AddHours(22).AddMinutes(18);
+        private readonly ILogger<EmailService> logger;
+        private readonly DateTime sendingTime = DateTime.Now.Date.AddHours(20);
 
         public CancellationToken token { get; set; }
 
-        public EmailService(IServiceScopeFactory scopeFactory, IConfiguration config, Logger<EmailService> logger)
+        public EmailService(IServiceScopeFactory scopeFactory, IConfiguration config, ILogger<EmailService> logger)
         {
-
+            
             CancellationTokenSource source = new CancellationTokenSource();
             token = source.Token;
             this.scopeFactory = scopeFactory;
@@ -98,7 +98,6 @@ namespace BusinessLogic.Interfaces
 
                 foreach (var reservation in reservationsList)
                 {
-
                     var mm = new MailMessage(sender, new MailAddress(reservation.User.Email));
                     mm.Subject = "Reservation";
                     mm.Body = msg;
