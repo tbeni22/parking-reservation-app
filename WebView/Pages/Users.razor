@@ -12,128 +12,131 @@
 
 
 <AuthorizeView Roles=@Role.ADMIN.ToString()>
-    <h3>Felhasználók</h3>
+    <Authorized>
+        <h3>Felhasználók</h3>
 
-    <table class="table table-bordered table-striped">
-        <thead class="thead-dark">
-            <tr>
-                <th>ID</th>
-                <th>Név</th>
-                <th>Email</th>
-                <th>Lakcím</th>
-                <th>Mozgáskorlátozott</th>
-                <th>Műveletek</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var user in users)
-            {
+        <table class="table table-bordered table-striped">
+            <thead class="thead-dark">
                 <tr>
-                    <td>@user.Id</td>
-                    <td>
-                        @if (editingList.Contains(user.Id))
-                        {
-                            <input class="form-control" @bind="@user.Name" />
-                        }
-                        else
-                        {
-                            @user.Name
-                        }
-                    </td>
-                    <td>
-                        @if (editingList.Contains(user.Id))
-                        {
-                            <input class="form-control" @bind="@user.Email" />
-                        }
-                        else
-                        {
-                            @user.Email
-                        }
-                    </td>
-                    <td>
-                        @if (editingList.Contains(user.Id))
-                        {
-                            <input class="form-control" @bind="@user.Address" />
-                        }
-                        else
-                        {
-                            @user.Address
-                        }
-                    </td>
-                    <td>
-                        @if (editingList.Contains(user.Id))
-                        {
-                            <input type="checkbox" @bind="@user.Disabled" />
-                        }
-                        else
-                        {
-                            @(user.Disabled ? "Igen" : "Nem")
-                        }
-                    </td>
-                    <td>
-                        <button class="btn btn-primary" @onclick="() => ToggleEdit(user.Id)">
+                    <th>ID</th>
+                    <th>Név</th>
+                    <th>Email</th>
+                    <th>Lakcím</th>
+                    <th>Mozgáskorlátozott</th>
+                    <th>Műveletek</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var user in users)
+                {
+                    <tr>
+                        <td>@user.Id</td>
+                        <td>
                             @if (editingList.Contains(user.Id))
                             {
-                                <span>Mentés</span>
+                                <input class="form-control" @bind="@user.Name" />
                             }
                             else
                             {
-                                <span>Szerkesztés</span>
+                                @user.Name
                             }
-                        </button>
+                        </td>
+                        <td>
+                            @if (editingList.Contains(user.Id))
+                            {
+                                <input class="form-control" @bind="@user.Email" />
+                            }
+                            else
+                            {
+                                @user.Email
+                            }
+                        </td>
+                        <td>
+                            @if (editingList.Contains(user.Id))
+                            {
+                                <input class="form-control" @bind="@user.Address" />
+                            }
+                            else
+                            {
+                                @user.Address
+                            }
+                        </td>
+                        <td>
+                            @if (editingList.Contains(user.Id))
+                            {
+                                <input type="checkbox" @bind="@user.Disabled" />
+                            }
+                            else
+                            {
+                                @(user.Disabled ? "Igen" : "Nem")
+                            }
+                        </td>
+                        <td>
+                            <button class="btn btn-primary" @onclick="() => ToggleEdit(user.Id)">
+                                @if (editingList.Contains(user.Id))
+                                {
+                                    <span>Mentés</span>
+                                }
+                                else
+                                {
+                                    <span>Szerkesztés</span>
+                                }
+                            </button>
 
-                        <button class="btn btn-danger" @onclick="() => DeleteUser(user.Id)">
-                            <span>Törlés</span>
-                        </button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+                            <button class="btn btn-danger" @onclick="() => DeleteUser(user.Id)">
+                                <span>Törlés</span>
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
 
-    <h3>Új felhasználó</h3>
-    <div class="align-content-center">
-        <form @onsubmit="AddUser" class="mt-4">
-            <div class="mb-3 small-input">
-                <label for="newUserName" class="form-label">Név:</label>
-                <input type="text" id="newUserName" @bind="newUser.Name" class="form-control" />
-            </div>
+        <h3>Új felhasználó</h3>
+        <div class="align-content-center">
+            <form @onsubmit="AddUser" class="mt-4">
+                <div class="mb-3 small-input">
+                    <label for="newUserName" class="form-label">Név:</label>
+                    <input type="text" id="newUserName" @bind="newUser.Name" class="form-control" />
+                </div>
 
-            <div class="mb-3 small-input">
-                <label for="newUserEmail" class="form-label">Email:</label>
-                <input type="text" id="newUserEmail" @bind="newUser.Email" class="form-control" />
-            </div>
+                <div class="mb-3 small-input">
+                    <label for="newUserEmail" class="form-label">Email:</label>
+                    <input type="text" id="newUserEmail" @bind="newUser.Email" class="form-control" />
+                </div>
 
-            <div class="mb-3 small-input">
-                <label for="newUserAddress" class="form-label">Lakcím:</label>
-                <input type="text" id="newUserAddress" @bind="newUser.Address" class="form-control" />
-            </div>
+                <div class="mb-3 small-input">
+                    <label for="newUserAddress" class="form-label">Lakcím:</label>
+                    <input type="text" id="newUserAddress" @bind="newUser.Address" class="form-control" />
+                </div>
 
-            <div class="mb-3 small-input">
-                <label for="userRole" class="form-label">Jogosultság:</label>
-                <select id="userRole" @bind="selectedRole" class="form-select">
-                    @foreach (var role in Enum.GetValues(typeof(Role)))
-                    {
-                        <option value="@role">@role</option>
-                    }
-                </select>
-            </div>
+                <div class="mb-3 small-input">
+                    <label for="userRole" class="form-label">Jogosultság:</label>
+                    <select id="userRole" @bind="selectedRole" class="form-select">
+                        @foreach (var role in Enum.GetValues(typeof(Role)))
+                        {
+                            <option value="@role">@role</option>
+                        }
+                    </select>
+                </div>
 
-            <div class="mb-3 form-check">
-                <input type="checkbox" id="newUserDisabled" @bind="newUser.Disabled" class="form-check-input" />
-                <label for="newUserDisabled" class="form-check-label">Mozgáskorlátozott</label>
-            </div>
+                <div class="mb-3 form-check">
+                    <input type="checkbox" id="newUserDisabled" @bind="newUser.Disabled" class="form-check-input" />
+                    <label for="newUserDisabled" class="form-check-label">Mozgáskorlátozott</label>
+                </div>
 
-            <button type="submit" class="btn btn-primary">Add User</button>
+                <button type="submit" class="btn btn-primary">Add User</button>
 
-            <div class="text-danger">@errorText</div>
-        </form>
-    </div>
+                <div class="text-danger">@errorText</div>
+            </form>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <p>Nincs jogosultságod a felhasználók megtekintéséhez!</p>
+    </NotAuthorized>
+
 </AuthorizeView>
 
-<AuthorizeView Roles=@Role.USER.ToString()>
-    <p>Nincs jogosultságod a felhasználók megtekintéséhez!</p>
-</AuthorizeView>
 
 
 @code {

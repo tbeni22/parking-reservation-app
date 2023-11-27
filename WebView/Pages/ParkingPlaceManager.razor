@@ -1,5 +1,6 @@
 ﻿@using BusinessLogic.DTOs
 @using BusinessLogic.Interfaces
+@using DataAccess.Data
 @page "/parking-places"
 @inject IParkingPlace parkingService
 
@@ -10,145 +11,153 @@
     }
 </style>
 
-<div class="title-section">
-    <h2>Parkolóhelyek kezelése</h2>
-</div>
 
 
-<h4>Új parkolóhely felvétele</h4>
 
-<div class="container mt-4 mb-3">
-    <div class="card border-dark">
-        <div class="card-body">
-            <div class="row">
-                <div class="col-sm-6 mb-3">
-                    <div class="form-group">
-                        <input class="form-control" placeholder="Név" @bind="currentPlace.Name" />
+<AuthorizeView Roles=@Role.ADMIN.ToString()>
+    <Authorized>
+        <div class="title-section">
+            <h2>Parkolóhelyek kezelése</h2>
+        </div>
+
+        <h4>Új parkolóhely felvétele</h4>
+
+        <div class="container mt-4 mb-3">
+            <div class="card border-dark">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-sm-6 mb-3">
+                            <div class="form-group">
+                                <input class="form-control" placeholder="Név" @bind="currentPlace.Name" />
+                            </div>
+                        </div>
+                        <div class="col-sm-6 mb-3">
+                            <div class="form-check form-group">
+                                <input class="form-check-input" type="checkbox" @bind="currentPlace.DisabledParking" id="disabledCheck" />
+                                <label class="form-check-label" for="disabledCheck">
+                                    Mozgáskorlátozott
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-center">
+                        <button class="btn btn-primary" style="width: 150px;" @onclick="AddParkingPlace">Parkolóhely felvétele</button>
                     </div>
                 </div>
-                <div class="col-sm-6 mb-3">
-                    <div class="form-check form-group">
-                        <input class="form-check-input" type="checkbox" @bind="currentPlace.DisabledParking" id="disabledCheck" />
-                        <label class="form-check-label" for="disabledCheck">
-                            Mozgáskorlátozott
-                        </label>
-                    </div>
-                </div>
-            </div>
-            <div class="d-flex justify-content-center">
-                <button class="btn btn-primary" style="width: 150px;" @onclick="AddParkingPlace">Parkolóhely felvétele</button>
             </div>
         </div>
-    </div>
-</div>
 
-<h4>Parkolóhelyek</h4>
-<table class="table table-bordered table-striped">
-    <thead class="thead-dark">
-        <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Disabled Parking</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var place in parkingPlaces)
-        {
-            <tr>
-                <td>@place.ID</td>
-                <td>
-                    @if (editingList.Contains(place.ID))
-                    {
-                        <input class="form-control" @bind="@place.Name" />
-                    }
-                    else
-                    {
-                        @place.Name
-                    }
-                </td>
-                <td>
-                    @if (editingList.Contains(place.ID))
-                    {
-                        <input type="checkbox" @bind="@place.DisabledParking" />
-                    }
-                    else
-                    {
-                        @(place.DisabledParking ? "Yes" : "No")
-                    }
-                </td>
-                <td>
-                    <button class="btn btn-primary" @onclick="() => ToggleEdit(place.ID)">
-                        @if (editingList.Contains(place.ID))
+        <h4>Parkolóhelyek</h4>
+        <table class="table table-bordered table-striped">
+            <thead class="thead-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Disabled Parking</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var place in parkingPlaces)
+                {
+                    <tr>
+                        <td>@place.ID</td>
+                        <td>
+                            @if (editingList.Contains(place.ID))
+                            {
+                                <input class="form-control" @bind="@place.Name" />
+                            }
+                            else
+                            {
+                                @place.Name
+                            }
+                        </td>
+                        <td>
+                            @if (editingList.Contains(place.ID))
+                            {
+                                <input type="checkbox" @bind="@place.DisabledParking" />
+                            }
+                            else
+                            {
+                                @(place.DisabledParking ? "Yes" : "No")
+                            }
+                        </td>
+                        <td>
+                            <button class="btn btn-primary" @onclick="() => ToggleEdit(place.ID)">
+                                @if (editingList.Contains(place.ID))
+                                {
+                                    <span>Mentés</span>
+                                }
+                                else
+                                {
+                                    <span>Szerkesztés</span>
+                                }
+                            </button>
+                            <button class="btn btn-secondary" @onclick="() => ShowReservations(place.ID)">
+                                <span>Foglalások</span>
+                            </button>
+                            <button class="btn btn-danger" @onclick="() => DeleteParkingPlace(place.ID)">
+                                <span>Törlés</span>
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+
+        <div class="modal fade @(showPopup ? "show" : "")" tabindex="-1" role="dialog" style="display: @(showPopup ? "block" : "none")">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Foglalások</h5>
+                        <button type="button" class="close" @onclick="ClosePopup">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        @if (selectedReservations == null)
                         {
-                            <span>Mentés</span>
+                            <span>No reservations</span>
                         }
                         else
                         {
-                            <span>Szerkesztés</span>
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Kezdés</th>
+                                        <th>Befejezés</th>
+                                        <th>Dolgozó azonosító</th>
+                                        <th>Dolgozó neve</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var reservation in selectedReservations)
+                                    {
+                                        <tr>
+                                            <td>@reservation.ID</td>
+                                            <td>@reservation.Beginning</td>
+                                            <td>@reservation.Ending</td>
+                                            <td>@reservation.User.Id</td>
+                                            <td>@reservation.User.Name</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
                         }
-                    </button>
-                    <button class="btn btn-secondary" @onclick="() => ShowReservations(place.ID)">
-                        <span>Foglalások</span>
-                    </button>
-                    <button class="btn btn-danger" @onclick="() => DeleteParkingPlace(place.ID)">
-                        <span>Törlés</span>
-                    </button>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
-
-
-<div class="modal fade @(showPopup ? "show" : "")" tabindex="-1" role="dialog" style="display: @(showPopup ? "block" : "none")">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Foglalások</h5>
-                <button type="button" class="close" @onclick="ClosePopup">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                @if (selectedReservations == null)
-                {
-                    <span>No reservations</span>
-                }
-                else
-                {
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Kezdés</th>
-                                <th>Befejezés</th>
-                                <th>Dolgozó azonosító</th>
-                                <th>Dolgozó neve</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var reservation in selectedReservations)
-                            {
-                                <tr>
-                                    <td>@reservation.ID</td>
-                                    <td>@reservation.Beginning</td>
-                                    <td>@reservation.Ending</td>
-                                    <td>@reservation.User.Id</td>
-                                    <td>@reservation.User.Name</td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                }
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" @onclick="ClosePopup">Bezárás</button>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @onclick="ClosePopup">Bezárás</button>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-</div>
-
+    </Authorized>
+    <NotAuthorized>
+        <h3>Nincs jogosultságod az oldal megtekintéséhez!</h3>
+    </NotAuthorized>
+</AuthorizeView>
 
 
 @code {
