@@ -33,15 +33,16 @@
                         Kezdete:
                     </label>
                     <input id="beginning-field" class="form-control" type="datetime-local" step="3600"
-                           @bind="@newReservation.Beginning" @oninput="e => DateChange(e.Value, 1)" />
+                           value="@newReservation.Beginning.ToString("yyyy-MM-ddTHH:mm:ss")" @onchange="e => DateChange(e.Value, 1)" />
                 </div>
                 
                 <div class="form-group col-sm-3 mb-3">
                     <label class="form-check-label" for="ending-field">
                         Vége:
                     </label>
-                    <input id="ending-field" class="form-control" type="datetime-local" step="3600" 
-                    @bind="newReservation.Ending" @oninput="e => DateChange(e.Value, 2)" />
+                    <input id="ending-field" class="form-control" type="datetime-local" step="3600"
+                           value="@newReservation.Ending.ToString("yyyy-MM-ddTHH:mm:ss")" min="@newReservation.Beginning.ToString("yyyy-MM-ddTHH:mm:ss")"
+                           @onchange="e => DateChange(e.Value, 2)" />
                 </div>
                 
                 <div class="form-group col-sm-6 mb-3">
@@ -56,16 +57,28 @@
                     </select>
                 </div>
                 <div class="form-group col-sm-12 mb-3">
-                    <label class="form-check-label" for="repeatin-reservation-field">
-                        Ismétlődő foglalás:
-                    </label>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="inlineRadioOptions" id="yesRadio" value="yes" @onclick="() => ShowRepeatedElement(true)">
-                        <label class="form-check-label" for="yesRadio">Igen</label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="inlineRadioOptions" id="noRadio" value="no" @onclick="() => ShowRepeatedElement(false)" checked>
-                        <label class="form-check-label" for="noRadio">Nem</label>
+                    <div class="row">
+                        <div class="form-group col-sm-6 mb-3">
+                            <label class="form-check-label" for="repeatin-reservation-field">
+                                Ismétlődő foglalás:
+                            </label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="inlineRadioOptions" id="yesRadio" value="yes"
+                                    @onclick="() => ShowRepeatedElement(true)">
+                                <label class="form-check-label" for="yesRadio">Igen</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="inlineRadioOptions" id="noRadio" value="no"
+                                    @onclick="() => ShowRepeatedElement(false)" checked>
+                                <label class="form-check-label" for="noRadio">Nem</label>
+                            </div>
+                        </div>
+                        <div class="form-group col-sm-6 mb-3 d-flex justify-content-center">
+                            @if (availablePlaces.Count < 2)
+                            {
+                                <button class="btn" @onclick="Notify">Helyhiány jelzése</button>
+                            }
+                        </div>
                     </div>
                 </div>
                 @if (repeated)
@@ -75,11 +88,13 @@
                             Rendszeressége:
                         </label>
                         <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="inlineRadioOptions2" id="dailyRadio" value="yes" @onclick="() => repetitionRate = RepetitionRate.Daily">
+                            <input class="form-check-input" type="radio" name="inlineRadioOptions2" id="dailyRadio" value="yes" 
+                                @onclick="() => repetitionRate = RepetitionRate.Daily">
                             <label class="form-check-label" for="dailyRadio">Napi</label>
                         </div>
                         <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="inlineRadioOptions2" id="weeklyRadio" value="no" @onclick="() => repetitionRate = RepetitionRate.Weekly">
+                            <input class="form-check-input" type="radio" name="inlineRadioOptions2" id="weeklyRadio" value="no" 
+                                @onclick="() => repetitionRate = RepetitionRate.Weekly">
                             <label class="form-check-label" for="weeklyRadio">Heti</label>
                         </div>
                     </div>
@@ -151,9 +166,18 @@
 
     protected override async Task OnInitializedAsync()
     {
-        userId = (await userService.GetCurrentUser()).Id;
-        newReservation.Ending = DateTime.Now;
-        newReservation.Beginning = DateTime.Now;
+        var user = (await userService.GetCurrentUser());
+        if (user != null)
+        {
+            userId = user.Id;
+        }
+        else
+        { }
+
+        var now = DateTime.Now;
+        DateTime staringDate = new DateTime(now.Year, now.Month, now.Day, now.Hour + 1, 0, 0);
+        newReservation.Beginning = staringDate;
+        newReservation.Ending = staringDate.AddHours(1);
         reservationList = await reservationService.GetReservationsForUser(userId);
         RefreshAvailablePlaces();
     }
@@ -164,9 +188,11 @@
         switch (type)
         {
             case 1:
+                newReservation.Beginning = dateValue;
                 validDate = dateValue.CompareTo(newReservation.Ending) < 0;
                 break;
             case 2:
+                newReservation.Ending = dateValue;
                 validDate = newReservation.Beginning.CompareTo(dateValue) < 0;
                 break;
         }
@@ -178,6 +204,12 @@
         reservationService.DeleteReservation(id);
         int idxToRemove = reservationList.FindIndex(r => r.ID == id);
         reservationList.RemoveAt(idxToRemove);
+    }
+
+    private void Notify()
+    {
+        reservationService.NotifyAboutNoFreeSpace(newReservation);
+        ShowError("Helyhiány bejelentve.");
     }
 
     private async Task Reserve()
@@ -233,10 +265,18 @@
 
     private async Task RefreshAvailablePlaces()
     {
+        newReservation.ParkingPlaceId = 0;
         availablePlaces.Clear();
         if (validDate)
         {
-            availablePlaces = await reservationService.GetFreeSpaces(newReservation.Beginning, newReservation.Ending);
+            try
+            {
+                availablePlaces = await reservationService.GetFreeSpaces(newReservation.Beginning, newReservation.Ending);
+            }
+            catch
+            {
+                ShowError();
+            }
         }
         var emptySelection = new ParkingPlaceDto
             {
@@ -245,6 +285,7 @@
                 DisabledParking = false
             };
         availablePlaces.Insert(0, emptySelection);
+        StateHasChanged();
 
         // sample
         /*Random rnd = new Random();
