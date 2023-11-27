@@ -14,10 +14,12 @@ namespace BusinessLogic.Interfaces.Implementations
     public class ReservationManager : IReservation
     {
         private ParkingContext context;
+        private IUserManagement userService;
 
-        public ReservationManager(ParkingContext context)
+        public ReservationManager(ParkingContext context, IUserManagement userService)
         {
             this.context = context;
+            this.userService = userService;
         }
 
         public async Task<List<ReservationDto>> GetReservationsForUser(int userId)
@@ -26,7 +28,7 @@ namespace BusinessLogic.Interfaces.Implementations
                         where reservation.UserId == userId
                         select reservation;
 
-            var entities = await query.ToListAsync();
+            var entities = await query.Include(e => e.ParkingPlace).ToListAsync();
             List<ReservationDto> result = new List<ReservationDto>();
             foreach (var entity in entities)
                 result.Add(
@@ -36,8 +38,7 @@ namespace BusinessLogic.Interfaces.Implementations
                         Beginning = entity.Beginning,
                         Ending = entity.Ending,
                         ParkingPlaceId = entity.ParkingPlaceId,
-                        ParkingPlaceName = entity.ParkingPlace.Name,
-                        User = UserDto.FromUser(entity.User)
+                        ParkingPlaceName = entity.ParkingPlace.Name
                     }
                 );
             return result;
@@ -64,7 +65,7 @@ namespace BusinessLogic.Interfaces.Implementations
 
         public async Task<ReservationDto> NewReservation(ReservationDto data)
         {
-            // todo: get user from session
+            var currentUser = await userService.GetCurrentUser();
 
             Reservation newreservation = new Reservation()
                 {
@@ -72,8 +73,8 @@ namespace BusinessLogic.Interfaces.Implementations
                     Beginning = data.Beginning,
                     Ending = data.Ending,
                     ParkingPlaceId = data.ParkingPlaceId,
-                    UserId = data.User.Id
-                };
+                    UserId = currentUser.Id
+            };
 
             var query = from reservation in context.Reservations
                         where reservation.ParkingPlace.ID == data.ParkingPlaceId
@@ -83,26 +84,27 @@ namespace BusinessLogic.Interfaces.Implementations
 
             var query2 = from parkingplace in context.ParkingPlaces
                         where parkingplace.DisabledParking == true
-                        && parkingplace.ID == parkingplace.ID
+                        && parkingplace.ID == data.ParkingPlaceId
                         select parkingplace;
 
 
             var query3 = (from reservation in context.Reservations
-                         where reservation.User.Id == data.User.Id
+                         where reservation.User.Id == currentUser.Id
                          select (reservation.Ending - reservation.Beginning).TotalHours)
                          .Sum();
 
             var entities = await query.ToListAsync();
             var disabled = await query2.FirstOrDefaultAsync();
+
             /*mozgássérült hely van*/
             if (disabled != null)
             {
-                if (entities.Count == 0 && data.User.Disabled == true && ((data.Ending-data.Beginning).TotalHours + query3) <= 12)
+                if (entities.Count == 0 && currentUser.Disabled == true && ((data.Ending-data.Beginning).TotalHours + query3) <= 12)
                 {
                     var created = await context.Reservations.AddAsync(newreservation);
                     context.SaveChanges();
                     var entity = created.Entity;
-                    return data;
+                    return ReservationDto.FromReservation(entity);
                 }
             }
             else
@@ -112,7 +114,7 @@ namespace BusinessLogic.Interfaces.Implementations
                     var created = await context.Reservations.AddAsync(newreservation);
                     context.SaveChanges();
                     var entity = created.Entity;
-                    return data;
+                    return ReservationDto.FromReservation(entity);
                 }
             }
 
@@ -192,8 +194,7 @@ namespace BusinessLogic.Interfaces.Implementations
                 Beginning = entity.Beginning,
                 Ending = entity.Ending,
                 ParkingPlaceId = entity.ParkingPlaceId,
-                ParkingPlaceName = entity.ParkingPlace.Name,
-                User = UserDto.FromUser(entity.User)
+                ParkingPlaceName = entity.ParkingPlace.Name
             };
         }
 
@@ -252,7 +253,7 @@ namespace BusinessLogic.Interfaces.Implementations
 
         public async Task<bool> NewReservationRepeat(ReservationDto data)
         {
-            // todo: get user from session
+            var currentUser = await userService.GetCurrentUser();
 
             Reservation newreservation = new Reservation()
             {
@@ -260,7 +261,7 @@ namespace BusinessLogic.Interfaces.Implementations
                 Beginning = data.Beginning,
                 Ending = data.Ending,
                 ParkingPlaceId = data.ParkingPlaceId,
-                UserId = data.User.Id
+                UserId = currentUser.Id
             };
 
             var query = from reservation in context.Reservations
@@ -271,12 +272,12 @@ namespace BusinessLogic.Interfaces.Implementations
 
             var query2 = from parkingplace in context.ParkingPlaces
                          where parkingplace.DisabledParking == true
-                         && parkingplace.ID == parkingplace.ID
+                         && parkingplace.ID == data.ParkingPlaceId
                          select parkingplace;
 
 
             var query3 = (from reservation in context.Reservations
-                          where reservation.User.Id == data.User.Id
+                          where reservation.User.Id == currentUser.Id
                           select (reservation.Ending - reservation.Beginning).TotalHours)
                          .Sum();
 
@@ -284,7 +285,7 @@ namespace BusinessLogic.Interfaces.Implementations
             var disabled = await query2.FirstOrDefaultAsync();
             if (disabled != null)
             {
-                if (entities.Count == 0 && data.User.Disabled == true && ((data.Ending - data.Beginning).TotalHours + query3) <= 12)
+                if (entities.Count == 0 && currentUser.Disabled == true && ((data.Ending - data.Beginning).TotalHours + query3) <= 12)
                 {
                    return true;
                 }

@@ -45,7 +45,7 @@
                         <label class="form-check-label" for="yesRadio">Igen</label>
                     </div>
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="inlineRadioOptions" id="noRadio" value="no" @onclick="() => ShowRepeatedElement(false)">
+                        <input class="form-check-input" type="radio" name="inlineRadioOptions" id="noRadio" value="no" @onclick="() => ShowRepeatedElement(false)" checked>
                         <label class="form-check-label" for="noRadio">Nem</label>
                     </div>
                 </div>
@@ -56,11 +56,11 @@
                             Rendszeressége:
                         </label>
                         <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="inlineRadioOptions2" id="dailyRadio" value="yes">
+                            <input class="form-check-input" type="radio" name="inlineRadioOptions2" id="dailyRadio" value="yes" @onclick="() => repetitionRate = RepetitionRate.Daily">
                             <label class="form-check-label" for="dailyRadio">Napi</label>
                         </div>
                         <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="inlineRadioOptions2" id="weeklyRadio" value="no">
+                            <input class="form-check-input" type="radio" name="inlineRadioOptions2" id="weeklyRadio" value="no" @onclick="() => repetitionRate = RepetitionRate.Weekly">
                             <label class="form-check-label" for="weeklyRadio">Heti</label>
                         </div>
                     </div>
@@ -68,7 +68,7 @@
                         <label class="form-check-label" for="repeate-for-field">
                             Alkalom:
                         </label>
-                        <select id="repeated-field" class="form-control">
+                        <select id="repeated-field" class="form-control" @bind="repetitionNumber">
                             @for (int i = 1; i <= 10; i++)
                             {
                                 <option value="@i">@i</option>
@@ -153,20 +153,39 @@
         reservationList.RemoveAt(idxToRemove);
     }
 
-    private async void Reserve()
+    private async Task Reserve()
     {
-        var result = await reservationService.NewReservation(newReservation);
-        if (result != null)
+        if (repeated)
         {
-            reservationList.Add(result);
+            var data = new RepeatingReservation
+                {
+                    FirstOccurence = newReservation,
+                    RepeateFor = repetitionNumber,
+                    Rate = repetitionRate
+                };
+
+            var result = await reservationService.NewRepeatingReservation(data);
+            if (!result)
+            {
+                // todo: display error
+            }
         }
         else
         {
-            // todo: display error
+            var result = await reservationService.NewReservation(newReservation);
+            if (result != null)
+            {
+                reservationList.Add(result);
+                StateHasChanged();
+            }
+            else
+            {
+                // todo: display error
+            }
         }
     }
 
-    private async void RefreshAvailablePlaces()
+    private async Task RefreshAvailablePlaces()
     {
         availablePlaces.Clear();
         if (validDate)
@@ -183,16 +202,11 @@
     }
 
     private bool repeated = false;
+    private RepetitionRate repetitionRate;
+    private int repetitionNumber = 1;
 
     private void ShowRepeatedElement(bool button)
     {
-        if(button)
-        {
-            repeated = true;
-        }
-        else
-        {
-            repeated = false;
-        }
+        repeated = button;
     }
 }

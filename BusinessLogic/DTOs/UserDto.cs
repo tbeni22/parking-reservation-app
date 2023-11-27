@@ -26,9 +26,10 @@ namespace BusinessLogic.DTOs
                 Email = user.Email,
                 Address = user.Address,
                 Disabled = user.Disabled,
-                Reservations = user.Reservations != null
+                // todo: lehet hibát dob lazy loading hiánya miatt, ha nincs behúzva a navproperty külön
+                /*Reservations = user.Reservations != null
                  ? new List<Reservation>(user.Reservations)
-                 : new List<Reservation>()
+                 : new List<Reservation>()*/
             };
         }
 
