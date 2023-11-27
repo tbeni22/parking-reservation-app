@@ -13,15 +13,15 @@
                     <label class="form-check-label" for="beginning-field">
                         Kezdete
                     </label>
-                    <input id="beginning-field" class="form-control" type="datetime-local"
-                        @bind="newReservation.Beginning" @oninput="RefreshAvailablePlaces" />
+                    <input id="beginning-field" class="form-control" type="datetime-local" step="3600"
+                           @bind="@newReservation.Beginning" @oninput="e => DateChange(e.Value, 1)" />
                 </div>
                 <div class="form-group col-sm-3 mb-3">
                     <label class="form-check-label" for="ending-field">
                         Vége
                     </label>
-                    <input id="ending-field" class="form-control" type="datetime-local" 
-                        @bind="newReservation.Ending" @oninput="RefreshAvailablePlaces" />
+                    <input id="ending-field" class="form-control" type="datetime-local" step="3600" 
+                        @bind="newReservation.Ending" @oninput="e => DateChange(e.Value, 2)" />
                 </div>
                 <div class="form-group col-sm-6 mb-3">
                     <label class="form-check-label" for="parking-place-field">
@@ -79,12 +79,28 @@
     List<ParkingPlaceDto> availablePlaces = new List<ParkingPlaceDto>();
 
     private ReservationDto newReservation = new ReservationDto();
+    private bool validDate = false;
 
     protected override async Task OnInitializedAsync()
     {
         newReservation.Ending = DateTime.Now;
         newReservation.Beginning = DateTime.Now;
         reservationList = await reservationService.GetReservationsForUser(userId);
+        RefreshAvailablePlaces();
+    }
+
+    private void DateChange(object value, int type)
+    {
+        DateTime dateValue = DateTime.Parse((string)value);
+        switch (type)
+        {
+            case 1:
+                validDate = dateValue.CompareTo(newReservation.Ending) < 0;
+                break;
+            case 2:
+                validDate = newReservation.Beginning.CompareTo(dateValue) < 0;
+                break;
+        }
         RefreshAvailablePlaces();
     }
 
@@ -110,13 +126,17 @@
 
     private async void RefreshAvailablePlaces()
     {
-        // todo: get from backend (no endpoint exists yet)
+        availablePlaces.Clear();
+        if (validDate)
+        {
+            availablePlaces = await reservationService.GetFreeSpaces(newReservation.Beginning, newReservation.Ending);
+        }
 
         // sample
-        Random rnd = new Random();
+        /*Random rnd = new Random();
         availablePlaces.Clear();
         for (int i = 0; i < 6; i++) {
             availablePlaces.Add(new ParkingPlaceDto { ID = i, Name = rnd.Next().ToString(), DisabledParking = false });
-        }
+        }*/
     }
 }
