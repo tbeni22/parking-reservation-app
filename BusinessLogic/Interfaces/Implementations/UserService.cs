@@ -1,9 +1,11 @@
 ﻿using BusinessLogic.DTOs;
 using DataAccess;
 using DataAccess.Data;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using static BusinessLogic.Consts;
 
 
@@ -14,12 +16,15 @@ namespace BusinessLogic.Interfaces.Implementations
         private readonly ParkingContext context;
         private readonly UserManager<User> userManager;
         private readonly SignInManager<User> signInManager;
+        private readonly HttpContextAccessor accessor;
 
-        public UserService(ParkingContext context, UserManager<User> userManager, SignInManager<User> signInManager)
+        public UserService(ParkingContext context, UserManager<User> userManager, SignInManager<User> signInManager,
+            HttpContextAccessor accessor)
         {
             this.context = context;
             this.userManager = userManager;
             this.signInManager = signInManager;
+            this.accessor = accessor;
         }
         public async Task<UserDto> CreateUser(UserDto dto, Role role, string password="ChangeThis#!4")
         {
@@ -135,6 +140,18 @@ namespace BusinessLogic.Interfaces.Implementations
             var dtos = users.Select(u => UserDto.FromUser(u)).ToList();
             //return the list
             return dtos;
+        }
+
+        public async Task<UserDto> GetCurrentUser()
+        {
+            var email = accessor.HttpContext.User.FindFirstValue(ClaimTypes.Email);
+            var query = from user in context.User
+                        where user.Email == email
+                        select user;
+
+            var current = await query.FirstOrDefaultAsync();
+            return UserDto.FromUser(current);
+
         }
 
         public class UserNotfoundException : Exception
