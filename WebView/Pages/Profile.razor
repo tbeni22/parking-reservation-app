@@ -4,38 +4,89 @@
 @using System.Security.Claims
 @page "/profile"
 @inject UserManager<User> UserManager
+@inject IUserManagement userService
 @inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
 @inherits ComponentBase
 
-<h1>User Profile</h1>
-<div>
-    <div>
-        <strong>ID:</strong> @userDto.Id
+<style>
+    .small-input {
+        width: 15%; /* Adjust the width as needed */
+    }
+</style>
+
+<div class="container">
+    <h1>Profil</h1>
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4"><strong>ID:</strong></div>
+                        <div class="col-md-8">@userDto.Id</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4"><strong>Név:</strong></div>
+                        <div class="col-md-8">@userDto.Name</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4"><strong>Email:</strong></div>
+                        <div class="col-md-8">@userDto.Email</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4"><strong>Lakcím:</strong></div>
+                        <div class="col-md-8">@userDto.Address</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4"><strong>Mozgáskorlátozott:</strong></div>
+                        <div class="col-md-8">@(userDto.Disabled ? "Igen" : "Nem")</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4"><strong>Jogosultság:</strong></div>
+                        <div class="col-md-8">@role</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div>
-        <strong>Name:</strong> @userDto.Name
+
+    <h3>Új Jelszó</h3>
+    <div class="align-content-center">
+        <form @onsubmit="ChangePassword" class="mt-4">
+            <div class="mb-3 small-input">
+                <label for="oldPassword" class="form-label">Régi jelszó:</label>
+                <input type="text" id="oldPassword" @bind="oldPassword" class="form-control" />
+            </div>
+
+            <div class="mb-3 small-input">
+                <label for="newPassword" class="form-label">Új jelszó:</label>
+                <input type="text" id="newPassword" @bind="newPassword" class="form-control" />
+            </div>
+
+            <div class="mb-3 small-input">
+                <label for="newPasswordAgain" class="form-label">Új jelszó újra:</label>
+                <input type="text" id="newPasswordAgain" @bind="newPasswordAgain" class="form-control" />
+            </div>
+
+
+            <button type="submit" class="btn btn-primary">Mentés</button>
+
+            <div class="text-danger">@errorText</div>
+            <div class="text-success">@successText</div>
+        </form>
     </div>
-    <div>
-        <strong>Email:</strong> @userDto.Email
-    </div>
-    <div>
-        <strong>Address:</strong> @userDto.Address
-    </div>
-    <div>
-        <strong>Disabled:</strong> @userDto.Disabled
-    </div>
-    <div>
-        <strong>Role:</strong> @role
-    </div>
-    <!-- Additional fields or actions -->
 </div>
 
 @code {
 
     private UserDto userDto;
     private string role = string.Empty;
+    private string oldPassword = string.Empty;
+    private string newPasswordAgain = string.Empty;
+    private string newPassword = string.Empty;
+    private string errorText = string.Empty;
+    private string successText = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
@@ -45,5 +96,25 @@
         var user = await UserManager.GetUserAsync(authUser);
         userDto = UserDto.FromUser(user);
         role = (await UserManager.GetRolesAsync(user)).FirstOrDefault();
+    }
+
+    private async Task ChangePassword()
+    {
+        if(newPassword != newPasswordAgain)
+        {
+            errorText = "A két jelszó nem egyezik!";
+            return;
+        }
+        try
+        {
+            await userService.UpdatePassword(userDto, newPassword, oldPassword);
+            errorText = string.Empty;
+            successText = "Sikeres jelszóváltoztatás!";
+        }
+        catch (Exception ex)
+        {
+            errorText = ex.Message;
+        }
+    
     }
 }

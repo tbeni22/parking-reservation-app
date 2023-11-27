@@ -88,6 +88,9 @@ namespace BusinessLogic.Interfaces.Implementations
                 {
                     var result = await userManager.ChangePasswordAsync(user, oldPassword, password);
                     await context.SaveChangesAsync();
+                    if(!result.Succeeded)
+                        throw new System.Exception($"Password change failed. {result.Errors.First().Description}");
+                    
                     return result.Succeeded;
                 }
                 else

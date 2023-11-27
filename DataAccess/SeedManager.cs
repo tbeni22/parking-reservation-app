@@ -45,9 +45,9 @@ namespace DataAccess
                 await userManager.CreateAsync(adminUser, "VerySecretPassword!1");
                 await userManager.AddToRoleAsync(adminUser, Role.ADMIN.ToString());
 
-                var basicUser = new User { UserName = "test@gmail.com", Email = "test@gmail.com" };
+                /*var basicUser = new User { UserName = "test@gmail.com", Email = "test@gmail.com" };
                 await userManager.CreateAsync(basicUser, "adMIN1234!");
-                await userManager.AddToRoleAsync(adminUser, Role.USER.ToString());
+                await userManager.AddToRoleAsync(adminUser, Role.USER.ToString());*/
             }
 
             
