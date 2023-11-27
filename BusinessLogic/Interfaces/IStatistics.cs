@@ -10,7 +10,7 @@ namespace BusinessLogic.Interfaces
 
         Task<int> getAllSpaceNumber();
 
-        Task<int> getWeeklyFailedReservationCount(DateOnly beginning);
+        Task<int> getWeeklyFailedReservationCount(DateTime beginning);
 
         Task<double> getWeeklyAverageHours(DateTime beginning);
 

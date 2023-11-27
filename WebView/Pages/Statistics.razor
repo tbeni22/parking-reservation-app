@@ -3,36 +3,58 @@
 
 @using ApexCharts;
 
-<h3>Statisztikák</h3>
+<div class="container">
+    <h3>Statisztikák</h3>
 
-<h4>Kihasználtság</h4>
+    <h4>Kihasználtság</h4>
 
-<ApexChart TItem="HourStat"
-           Title="Órákra bontott parkolóhely kihasználtság (%)"
-           Options="heatmapOptions">
+    <div class="row">
+        <div class="col-lg-6 col-sm-12">
+            <ApexChart TItem="HourStat"
+                       Title="Órákra bontott parkolóhely kihasználtság (%)"
+                       Options="heatmapOptions">
 
-    @foreach (var oneDate in hourlyUsageStats)
-    {
-        <ApexPointSeries TItem="HourStat"
-                     Items="oneDate.Stats"
-                     Name="@oneDate.Date.ToString()"
-                     SeriesType="SeriesType.Heatmap"
-                     XValue="@(e => e.Hour)"
-                     YValue="@(e => Convert.ToInt32(e.Ratio * 100))" />
-    }
+                @foreach (var oneDate in hourlyUsageStats)
+                {
+                    <ApexPointSeries TItem="HourStat"
+                                     Items="oneDate.Stats"
+                                     Name="@oneDate.Date.ToString()"
+                                     SeriesType="SeriesType.Heatmap"
+                                     XValue="@(e => e.Hour)"
+                                     YValue="@(e => Convert.ToInt32(e.Ratio * 100))" />
+                }
 
-</ApexChart>
+            </ApexChart>
+        </div>
+        <div class="col-lg-6 col-sm-12">
+            <ApexChart TItem="WeeklyAverage"
+                       Title="Felhasználók által átlagosan foglalt napok száma">
 
-<ApexChart TItem="WeeklyAverage"
-           Title="Felhasználók által átlagosan foglalt napok száma">
+                <ApexPointSeries TItem="WeeklyAverage"
+                                 Items="WeeklyAverages"
+                                 Name="Heti átlag"
+                                 XValue="@(e => (e.StartDate.ToString() + " - " + e.StartDate.AddDays(6).ToString()))"
+                                 YValue="@(e => Convert.ToInt32(e.Average))"
+                                 SeriesType="SeriesType.Bar" />
+            </ApexChart>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-6 col-sm-12">
+            <ApexChart TItem="WeeklyAverage"
+                       Title="Helyhiány mértéke">
 
-    <ApexPointSeries TItem="WeeklyAverage"
-                     Items="WeeklyAverages"
-                     Name="Heti átlag"
-                     XValue="@(e => (e.StartDate.ToString() + " - " + e.StartDate.AddDays(6).ToString()))"
-                     YValue="@(e => Convert.ToInt32(e.Average))"
-                     SeriesType="SeriesType.Bar" />
-</ApexChart>
+                <ApexPointSeries TItem="WeeklyAverage"
+                                 Items="NotificationsWeekly"
+                                 Name="Heti összesítés"
+                                 XValue="@(e => (e.StartDate.ToString() + " - " + e.StartDate.AddDays(6).ToString()))"
+                                 YValue="@(e => Convert.ToInt32(e.Average))"
+                                 SeriesType="SeriesType.Bar" />
+            </ApexChart>
+        </div>
+    </div>
+
+</div>
 
 @code {
     class DailyUsage {
@@ -48,6 +70,7 @@
     }
     private List<WeeklyAverage> WeeklyAverages { get; set; } = new();
 
+    private List<WeeklyAverage> NotificationsWeekly { get; set; } = new ();
 
     // used for smiley sample data
     private double GetSmileyPixel(int dateIdx, int hour) {
@@ -96,5 +119,13 @@
             WeeklyAverages.Add(data);
         }
 
+        // data for notification bar chart
+        for (int i = 3; i >= 0; i--)
+        {
+            var startDate = DateTime.Now.AddDays(-(i+1) * 7);
+            var average = await statisticsService.getWeeklyFailedReservationCount(startDate);
+            var data = new WeeklyAverage { Average = average, StartDate = DateOnly.FromDateTime(startDate) };
+            NotificationsWeekly.Add(data);
+        }
     }
 }

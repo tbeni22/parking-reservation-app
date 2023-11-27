@@ -14,13 +14,11 @@ namespace BusinessLogic.Interfaces.Implementations
 {
     public class StatisticsService : IStatistics
     {
-
         private ParkingContext _context;
 
         public StatisticsService(ParkingContext context) {
 
             _context = context;
-
         }
         public async Task<int> getAllSpaceNumber()
         {
@@ -91,8 +89,6 @@ namespace BusinessLogic.Interfaces.Implementations
                              Time = userWeekly.Select(x => x.Time.Ticks).Average()
                          };
 
-
-
             int userCount = await _context.User.CountAsync();
 
             try
@@ -114,7 +110,7 @@ namespace BusinessLogic.Interfaces.Implementations
 
             var query = from reservation in _context.Reservations
                         where reservation.Beginning.Date.CompareTo(referenceStart) >= 0
-                        && reservation.Beginning.Date.CompareTo(referenceStart) < 0
+                        && reservation.Beginning.Date.CompareTo(referenceEnd) <= 0
                         group reservation by new { reservation.UserId } into userReservations
                         select new
                         {
@@ -133,18 +129,17 @@ namespace BusinessLogic.Interfaces.Implementations
             }
         }
 
-        public async Task<int> getWeeklyFailedReservationCount(DateOnly beginning)
+        public async Task<int> getWeeklyFailedReservationCount(DateTime beginning)
         {
-            var end = beginning.AddDays(7);
+            var end = beginning.AddDays(6);
 
             var query = from reservation in _context.FailureReports
-                        where (DateOnly.FromDateTime(reservation.Beginning).DayNumber >= beginning.DayNumber
-                        && DateOnly.FromDateTime(reservation.Beginning).DayNumber <= end.DayNumber)
+                        where reservation.Beginning.Date.CompareTo(beginning) >= 0
+                        && reservation.Beginning.Date.CompareTo(end) <= 0
+                        
                         select reservation;
 
                 return await query.CountAsync();
-            
-
         }
     }
 }

@@ -175,9 +175,9 @@
         { }
 
         var now = DateTime.Now;
-        DateTime staringDate = new DateTime(now.Year, now.Month, now.Day, now.Hour + 1, 0, 0);
+        DateTime staringDate = new DateTime(now.Year, now.Month, now.Day, now.Hour, 0, 0);
         newReservation.Beginning = staringDate;
-        newReservation.Ending = staringDate.AddHours(1);
+        newReservation.Ending = staringDate;
         reservationList = await reservationService.GetReservationsForUser(userId);
         RefreshAvailablePlaces();
     }
