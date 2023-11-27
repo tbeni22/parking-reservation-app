@@ -149,8 +149,11 @@ namespace BusinessLogic.Interfaces.Implementations
                         where user.Email == email
                         select user;
 
+            
             var current = await query.FirstOrDefaultAsync();
-            return UserDto.FromUser(current);
+            if (current != null)
+                return UserDto.FromUser(current);
+            else return null;
 
         }
 
