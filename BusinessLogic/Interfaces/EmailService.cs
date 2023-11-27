@@ -15,7 +15,7 @@ namespace BusinessLogic.Interfaces
         private readonly IServiceScopeFactory scopeFactory;
         private readonly IConfiguration config;
         private readonly Logger<EmailService> logger;
-        private readonly DateTime sendingTime = DateTime.Now.Date.AddHours(21).AddMinutes(42);
+        private readonly DateTime sendingTime = DateTime.Now.Date.AddHours(22).AddMinutes(18);
 
         public CancellationToken token { get; set; }
 
@@ -63,13 +63,14 @@ namespace BusinessLogic.Interfaces
         private async Task sendEmails()
         {
 
-            var ourEmail = "parking@gmail.com";
+            var ourEmail = config.GetSection("SMTPConnection").GetValue<string>("email");
 
-            var password = "mustUsePassword";
+            var password = config.GetSection("SMTPConnection").GetValue<string>("password");
 
             var client = new SmtpClient(config.GetSection("SMTPConnection").GetValue<string>("host"), config.GetSection("SMTPConnection").GetValue<int>("port"))
             {
-                UseDefaultCredentials = true
+                UseDefaultCredentials = false,
+                Credentials = new NetworkCredential(ourEmail, password)
             };
             var msg = "You have a reservation tomorrow";
 
