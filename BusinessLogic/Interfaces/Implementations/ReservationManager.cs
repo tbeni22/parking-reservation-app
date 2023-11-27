@@ -37,7 +37,7 @@ namespace BusinessLogic.Interfaces.Implementations
                         Ending = entity.Ending,
                         ParkingPlaceId = entity.ParkingPlaceId,
                         ParkingPlaceName = entity.ParkingPlace.Name,
-                        User = ConvertToUserDto(entity.User)
+                        User = UserDto.FromUser(entity.User)
                     }
                 );
             return result;
@@ -57,7 +57,7 @@ namespace BusinessLogic.Interfaces.Implementations
                     Ending = entity.Ending,
                     ParkingPlaceId = entity.ParkingPlaceId,
                     ParkingPlaceName = entity.ParkingPlace.Name,
-                    User = ConvertToUserDto(entity.User)
+                    User = UserDto.FromUser(entity.User)
                 };
             else return null;
         }
@@ -193,7 +193,7 @@ namespace BusinessLogic.Interfaces.Implementations
                 Ending = entity.Ending,
                 ParkingPlaceId = entity.ParkingPlaceId,
                 ParkingPlaceName = entity.ParkingPlace.Name,
-                User = ConvertToUserDto(entity.User)
+                User = UserDto.FromUser(entity.User)
             };
         }
 
@@ -226,11 +226,11 @@ namespace BusinessLogic.Interfaces.Implementations
             var reserved = await (from reservation in context.Reservations
                                   where Start.CompareTo(reservation.Beginning) >= 0 && Start.CompareTo(reservation.Ending) <= 0
                                         && End.CompareTo(reservation.Beginning) >= 0 && End.CompareTo(reservation.Ending) <= 0
-                                  select reservation)
+                                  select reservation.ParkingPlaceId)
                                   .ToListAsync();
 
             var freeSpaces = await (from parkingPlace in context.ParkingPlaces
-                                    where !reserved.Any(reservation => reservation.ParkingPlaceId == parkingPlace.ID)
+                                    where !reserved.Contains(parkingPlace.ID)
                                     select parkingPlace)
                                     .ToListAsync();
 
@@ -248,17 +248,6 @@ namespace BusinessLogic.Interfaces.Implementations
             }
 
             return freeSpacesList;
-        }
-
-        public UserDto ConvertToUserDto(User user)
-        {
-            return new UserDto()
-            {
-                Id = user.Id,
-                Name = user.UserName,
-                Email = user.Email,
-                Reservations = user.Reservations
-            };
         }
 
         public async Task<bool> NewReservationRepeat(ReservationDto data)

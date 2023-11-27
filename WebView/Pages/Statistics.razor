@@ -66,14 +66,14 @@
         for (int i = 0; i < 5; i++)
         {
             // get data from service
-            //var dailyUsageData = await statisticsService.getUsageRatio(DateOnly.FromDateTime(DateTime.Now.AddDays(-i)));
+            var dailyUsageData = await statisticsService.getUsageRatio(DateOnly.FromDateTime(DateTime.Now.AddDays(-i)));
 
             // seed sample data
-            List<HourStat> dailyUsageData = new List<HourStat>();
+            /*List<HourStat> dailyUsageData = new List<HourStat>();
             for (int j = 8; j < 16; j++)
             {
                 dailyUsageData.Add(new HourStat { Hour = j, Ratio = GetSmileyPixel(i+1, j) });
-            }
+            }*/
 
             hourlyUsageStats.Add(new DailyUsage
                 {
