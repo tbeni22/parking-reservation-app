@@ -54,6 +54,7 @@ builder.Services.AddScoped(typeof(IStatistics), typeof(StatisticsService));
 builder.Services.AddScoped(typeof(IUserManagement), typeof(UserService));
 builder.Services.AddScoped(typeof(IParkingPlace), typeof(ParkingService));
 builder.Services.AddScoped(typeof(IReservation), typeof(ReservationManager));
+builder.Services.AddSingleton(typeof(EmailService));
 
 
 var app = builder.Build();
@@ -84,6 +85,8 @@ app.MapFallbackToPage("/_Host");
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
+
+    var emailService = services.GetService<EmailService>();
 
     await SeedManager.Seed(services);
 }
