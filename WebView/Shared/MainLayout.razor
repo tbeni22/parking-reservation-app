@@ -13,11 +13,33 @@
             <a href="/stats">Stats</a>
         </header>
 
+        <AuthorizeView>
+            
+            <NotAuthorized>
+                <RedirectToLogin />
+            </NotAuthorized>
+        </AuthorizeView>
+
         <article class="content px-4">
             @Body
         </article>
     </main>
 </div>
+
+@code {
+    [Inject] NavigationManager NavigationManager { get; set; }
+    [CascadingParameter] Task<AuthenticationState> authenticationStateTask { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await authenticationStateTask;
+        if (!authState.User.Identity.IsAuthenticated)
+        {
+            NavigationManager.NavigateTo("/Identity/Account/Login");
+        }
+    }
+}
+
 
 <style>
 
@@ -27,15 +49,15 @@
         padding: 10px;
     }
 
-    header.top-row a {
-        color: white;
-        text-decoration: none;
-        margin-right: 20px;
-    }
+        header.top-row a {
+            color: white;
+            text-decoration: none;
+            margin-right: 20px;
+        }
 
-    header.top-row a:hover {
-        color: black;
-    }
+            header.top-row a:hover {
+                color: black;
+            }
 
     body {
         background-color: #B2DFDB
