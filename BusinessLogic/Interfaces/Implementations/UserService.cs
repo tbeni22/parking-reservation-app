@@ -16,10 +16,10 @@ namespace BusinessLogic.Interfaces.Implementations
         private readonly ParkingContext context;
         private readonly UserManager<User> userManager;
         private readonly SignInManager<User> signInManager;
-        private readonly HttpContextAccessor accessor;
+        private readonly IHttpContextAccessor accessor;
 
         public UserService(ParkingContext context, UserManager<User> userManager, SignInManager<User> signInManager,
-            HttpContextAccessor accessor)
+            IHttpContextAccessor accessor)
         {
             this.context = context;
             this.userManager = userManager;
