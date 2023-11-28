@@ -189,11 +189,8 @@
     void ShowReservations(int placeId)
     {
         showPopup = true;
-        selectedReservations = new List<ReservationDto>();
-        selectedReservations.Add(new ReservationDto() { ID = 1, Beginning = DateTime.Now, Ending = DateTime.Now.AddMonths(1), User = new UserDto() { Id = 1, Name = "Gódor Gordon" } });
-        selectedReservations.Add(new ReservationDto() { ID = 2, Beginning = DateTime.Now.AddMonths(2), Ending = DateTime.Now, User = new UserDto() { Id = 2, Name = "Telek Benedek" } });
-        //selectedReservations = null;
-        //selectedReservations = parkingPlaces.Find(x => x.ID == placeId).Reservations.ToList();
+
+        selectedReservations = parkingPlaces.Find(x => x.ID == placeId).Reservations.ToList();
     }
 
     async Task ToggleEdit(int placeId)
