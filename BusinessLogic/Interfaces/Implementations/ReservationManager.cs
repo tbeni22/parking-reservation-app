@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using System.Collections;
 
 namespace BusinessLogic.Interfaces.Implementations
 {
@@ -168,8 +169,9 @@ namespace BusinessLogic.Interfaces.Implementations
                     isReserved = true;
                 }
             }
-
-            if( !isReserved )
+            DateTime last = reservations.Last().Beginning;
+            DateTime start = DateTime.Now.AddDays(30);
+            if( !isReserved && start.CompareTo(last) > 0)
             {
                 foreach (ReservationDto res in reservations)
                 {
