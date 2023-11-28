@@ -78,8 +78,8 @@ namespace BusinessLogic.Interfaces.Implementations
 
             var query = from reservation in context.Reservations
                         where reservation.ParkingPlace.ID == data.ParkingPlaceId
-                        && data.Beginning.CompareTo(reservation.Beginning) >= 0 && data.Beginning.CompareTo(reservation.Ending) <= 0
-                        && data.Ending.CompareTo(reservation.Beginning) >= 0 && data.Ending.CompareTo(reservation.Ending) <= 0
+                        && ((data.Beginning.CompareTo(reservation.Beginning) >= 0 && data.Beginning.CompareTo(reservation.Ending) < 0)
+                        || (data.Ending.CompareTo(reservation.Beginning) > 0 && data.Ending.CompareTo(reservation.Ending) <= 0))
                         select reservation;
 
             var query2 = from parkingplace in context.ParkingPlaces
@@ -89,7 +89,7 @@ namespace BusinessLogic.Interfaces.Implementations
 
 
             var query3 = (from reservation in context.Reservations
-                         where reservation.User.Id == currentUser.Id && reservation.Beginning.Day == DateTime.Now.Day
+                         where reservation.User.Id == currentUser.Id
                           select (reservation.Ending - reservation.Beginning).Hours)
                          .Sum();
 
@@ -228,8 +228,8 @@ namespace BusinessLogic.Interfaces.Implementations
             List<ParkingPlaceDto> freeSpacesList = new List<ParkingPlaceDto>();
 
             var reserved = await (from reservation in context.Reservations
-                                  where Start.CompareTo(reservation.Beginning) >= 0 && Start.CompareTo(reservation.Ending) <= 0
-                                        && End.CompareTo(reservation.Beginning) >= 0 && End.CompareTo(reservation.Ending) <= 0
+                                  where (Start.CompareTo(reservation.Beginning) >= 0 && Start.CompareTo(reservation.Ending) < 0)
+                                        || (End.CompareTo(reservation.Beginning) > 0 && End.CompareTo(reservation.Ending) <= 0)
                                   select reservation.ParkingPlaceId)
                                   .ToListAsync();
 
@@ -260,8 +260,8 @@ namespace BusinessLogic.Interfaces.Implementations
 
             var query = from reservation in context.Reservations
                         where reservation.ParkingPlace.ID == data.ParkingPlaceId
-                        && data.Beginning.CompareTo(reservation.Beginning) >= 0 && data.Beginning.CompareTo(reservation.Ending) <= 0
-                        && data.Ending.CompareTo(reservation.Beginning) >= 0 && data.Ending.CompareTo(reservation.Ending) <= 0
+                        && ((data.Beginning.CompareTo(reservation.Beginning) >= 0 && data.Beginning.CompareTo(reservation.Ending) < 0)
+                        || (data.Ending.CompareTo(reservation.Beginning) > 0 && data.Ending.CompareTo(reservation.Ending) <= 0))
                         select reservation;
 
             var query2 = from parkingplace in context.ParkingPlaces
