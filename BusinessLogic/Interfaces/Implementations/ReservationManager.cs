@@ -96,10 +96,11 @@ namespace BusinessLogic.Interfaces.Implementations
             var entities = await query.ToListAsync();
             var disabled = await query2.FirstOrDefaultAsync();
 
+            DateTime start = data.Beginning;
             /*mozgássérült hely van*/
             if (disabled != null)
             {
-                if (entities.Count == 0 && currentUser.Disabled == true && ((data.Ending-data.Beginning).Hours + query3) <= 12)
+                if (entities.Count == 0 && currentUser.Disabled == true && start.AddHours(12).CompareTo(data.Ending) >= 0)
                 {
                     var created = await context.Reservations.AddAsync(newreservation);
                     context.SaveChanges();
@@ -109,7 +110,7 @@ namespace BusinessLogic.Interfaces.Implementations
             }
             else
             {
-                if (entities.Count == 0 && ((data.Ending - data.Beginning).TotalHours + query3) <= 12)
+                if (entities.Count == 0 && start.AddHours(12).CompareTo(data.Ending) >= 0)
                 {
                     var created = await context.Reservations.AddAsync(newreservation);
                     context.SaveChanges();

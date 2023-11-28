@@ -102,8 +102,15 @@
                         <label class="form-check-label" for="repeate-for-field">
                             Alkalom:
                         </label>
+                        @if (repetitionRate == RepetitionRate.Daily)
+                        {
+                            max = 7;
+                        } else
+                        {
+                            max = 4;
+                        }
                         <select id="repeated-field" class="form-control" @bind="repetitionNumber">
-                            @for (int i = 1; i <= 10; i++)
+                            @for (int i = 2; i <= max; i++)
                             {
                                 <option value="@i">@i</option>
                             }
@@ -299,6 +306,7 @@
     private bool repeated = false;
     private RepetitionRate repetitionRate;
     private int repetitionNumber = 1;
+    private int max;
 
     private void ShowRepeatedElement(bool button)
     {
